@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useAppStore, type ViewType, type UserInfo } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -13,7 +13,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", icon: LayoutDashboard, labelKey: "dashboard", roles: ["doctor", "monitor"] },
-  { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor%] },
+  { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
   { key: "my-assesments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
   { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: [] },
   { key: "admin-questions", icon: Database, labelKey: "questionsManagement", roles: [] },
@@ -71,7 +71,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           ) : (
             dir === "rtl" ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
           )}
-          {!collapsed && <span>{dir === "rtl" ? "ӆ�Ӏ݉ه العل " : "Collapse"}</span>}
+          {!collapsed && <span>{dir === "rtl" ? "Ó†ï¿½Ó€Ý‰Ù‡ Ø§Ù„Ø¹Ù„ " : "Collapse"}</span>}
         </button>
       </div>
     </aside>
