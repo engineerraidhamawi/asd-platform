@@ -15,9 +15,9 @@ const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", icon: LayoutDashboard, labelKey: "dashboard", roles: ["doctor", "monitor"] },
   { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
   { key: "my-assessments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
-  { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: [] },
-  { key: "admin-questions", icon: Database, labelKey: "questionsManagement", roles: [] },
-  { key: "audit-log", icon: FileText, labelKey: "auditLog", roles: [] },
+  { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: ["admin"] },
+  { key: "admin-questions", icon: Database, labelKey: "questionsManagement", roles: ["admin"] },
+  { key: "audit-log", icon: FileText, labelKey: "auditLog", roles: ["admin"] },
   { key: "monitor-data", icon: BarChart3, labelKey: "aggregatedData", roles: ["monitor"] },
 ];
 
@@ -109,3 +109,4 @@ export function MobileNav() {
     </div>
   );
 }
+
