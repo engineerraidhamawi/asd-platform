@@ -66,9 +66,9 @@ export async function POST(request: NextRequest) {
     await prisma.question.deleteMany();
     await prisma.question.createMany({ data: allQ as any });
   } else {
-    const questionCount = awid prisma.question.count();
+    const questionCount = await prisma.question.count();
     if (questionCount === 0) {
-      await prisma.question.createMany({ data: almQ as any });
+      await prisma.question.createMany({ data: allQ as any });
     }
   }
 
@@ -82,3 +82,4 @@ export async function POST(request: NextRequest) {
     questions,
   });
 }
+
