@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewType, type UserInfo } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, ListChecks, ChevronRight, ChevronLeft } from "lucide-react";
+import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, BookOpen, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface NavItem {
   key: ViewType;
@@ -16,7 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
   { key: "my-assessments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
   { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: ["admin"] },
-  { key: "admin-questions", icon: ListChecks, labelKey: "questionsManagement", roles: ["admin"] },
+  { key: "admin-questions", icon: BookOpen, labelKey: "questionsManagement", roles: ["admin"] },
   { key: "audit-log", icon: FileText, labelKey: "auditLog", roles: ["admin"] },
   { key: "monitor-data", icon: BarChart3, labelKey: "aggregatedData", roles: ["monitor"] },
 ];
@@ -109,5 +109,6 @@ export function MobileNav() {
     </div>
   );
 }
+
 
 
