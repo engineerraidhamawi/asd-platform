@@ -35,7 +35,7 @@ export function AdminQuestionsView() {
       .catch(() => {});
   };
 
-  useState(() => { loadCounts(); });
+  useEffect(() => { loadCounts(); }, []);
 
   const handleUpload = async (file: File) => {
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
