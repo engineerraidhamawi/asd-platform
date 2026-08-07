@@ -54,7 +54,7 @@ export function SignupView() {
             <div className='space-y-2'><Label>{t('password')}</Label><Input type='password' value={password} onChange={e => setPassword(e.target.value)} className='h-11' dir='ltr' /></div>
             <div className='space-y-2'>
               <Label>{t('role')}</Label>
-              <Select value={role} onValueChange={setRole}><SelectTrigger className='w-full h-11'><SelectValue placeholder={t('selectRole')} /></SelectTrigger><SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{t(r)}</SelectItem>)}</SelectContent></Select>
+              <Select value={role} onValueChange={(val) => setRole(val)}><SelectTrigger className='w-full h-11'><SelectValue placeholder={t('selectRole')} /></SelectTrigger><SelectContent>{ROLES.map(r => <SelectItem key={r} value={r}>{t(r)}</SelectItem>)}</SelectContent></Select>
             </div>
             {error && <p className='text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3'>{error}</p>}
             <Button type='submit' disabled={loading} className='w-full h-11 bg-emerald-600 hover:bg-emerald-700 gap-2'>

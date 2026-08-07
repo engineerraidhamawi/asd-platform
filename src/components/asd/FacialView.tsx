@@ -15,7 +15,7 @@ export function FacialView() {
   const [landmarks, setLandmarks] = useState<{x:number;y:number}[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const animRef = useRef<number>(0);
 
   // Simulate facial landmark detection

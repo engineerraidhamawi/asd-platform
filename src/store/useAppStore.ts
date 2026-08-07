@@ -15,7 +15,7 @@ export type ViewType =
   | "admin-users"
   | "audit-log"
   | "monitor-data"
-  | "my-assessments";
+  | "my-assessments" | "assess-facial" | "assess-motor";
 
 export interface UserInfo {
   id: string;
