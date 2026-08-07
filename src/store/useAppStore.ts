@@ -1,4 +1,4 @@
-import { create } from "zustand";
+﻿import { create } from "zustand";
 
 export type ViewType =
   | "login"
@@ -7,7 +7,7 @@ export type ViewType =
   | "patients"
   | "patient-detail"
   | "new-assesment"
-  | "consent"
+  | "new-assessment" | "consent"
   | "assess-questionnaire"
   | "analyzing"
   | "results"

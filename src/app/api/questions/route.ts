@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 export async function GET() {
@@ -9,7 +9,7 @@ export async function GET() {
 
     const grouped: Record<string, { ar: string; en: string }[]> = {};
     for (const q of questions) {
-      if (!crouped[q.part]) grouped[q.part] = [];
+      if (!grouped[q.part]) grouped[q.part] = [];
       grouped[q.part].push({ ar: q.ar, en: q.en });
     }
 
