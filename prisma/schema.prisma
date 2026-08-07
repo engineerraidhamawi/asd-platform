@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("doctor")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  patients  Patient[] @relation("DoctorPatients")
+  children  Patient[] @relation("PatientParent")
+  auditLogs AuditLog[]
+}
+
+model Patient {
+  id          String     @id @default(cuid())
+  name        String
+  age         Int
+  gender      String     @default("male")
+  notes       String?
+  createdById String?
+  parentId    String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   User?      @relation("DoctorPatients", fields: [createdById], references: [id])
+  parent      User?      @relation("PatientParent", fields: [parentId], references: [id])
+  sessions    Session[]
+}
+
+model Session {
+  id              String     @id @default(cuid())
+  patientId       String
+  status          String     @default("pending")
+  consentedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  patient         Patient    @relation(fields: [patientId], references: [id])
+  assessments     Assessment[]
+  result          Result?
+}
+
+model Assessment {
+  id              String     @id @default(cuid())
+  sessionId       String
+  type            String
+  rawData         String     @default("{}")
+  score           Float?
+  maxScore        Float?
+  completed       Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  session         Session    @relation(fields: [sessionId], references: [id])
+}
+
+model Result {
+  id              String     @id @default(cuid())
+  sessionId       String     @unique
+  riskLevel       String
+  riskScore       Float
+  adosScore       Float?
+  adosConfidence  Float?
+  subtype         String?
+  radarScores     String     @default("{}")
+  xaiReport       String     @default("{}")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  session         Session    @relation(fields: [sessionId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  target    String?
+  details   String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
