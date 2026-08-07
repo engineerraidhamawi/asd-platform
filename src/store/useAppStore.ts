@@ -6,7 +6,7 @@ export type ViewType =
   | "dashboard"
   | "patients"
   | "patient-detail"
-  | "new-assessment"
+  | "new-assesment"
   | "consent"
   | "assess-questionnaire"
   | "analyzing"
@@ -15,7 +15,7 @@ export type ViewType =
   | "admin-users"
   | "audit-log"
   | "monitor-data"
-  | "my-assessments" | "assess-facial" | "assess-motor";
+  | "my-assessments" | "assess-facial" | "assess-motor" | "admin-questions";
 
 export interface UserInfo {
   id: string;

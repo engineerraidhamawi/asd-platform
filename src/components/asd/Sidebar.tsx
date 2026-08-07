@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewType, type UserInfo } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, ChevronRight, ChevronLeft } from "lucide-react";
+import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, Database, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface NavItem {
   key: ViewType;
@@ -13,9 +13,10 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { key: "dashboard", icon: LayoutDashboard, labelKey: "dashboard", roles: ["doctor", "monitor"] },
-  { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
-  { key: "my-assessments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
+  { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor%] },
+  { key: "my-assesments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
   { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: [] },
+  { key: "admin-questions", icon: Database, labelKey: "questionsManagement", roles: [] },
   { key: "audit-log", icon: FileText, labelKey: "auditLog", roles: [] },
   { key: "monitor-data", icon: BarChart3, labelKey: "aggregatedData", roles: ["monitor"] },
 ];
@@ -29,9 +30,9 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
   const items = NAV_ITEMS.filter(item => item.roles.includes(user.role));
 
   return (
-    <aside className={`${collapsed ? "w-16" : "w-56"} bg-white border-${dir === "rtl" ? "l" : "r"} border-gray-200 flex flex-col transition-all duration-200 flex-shrink-0 hidden md:flex`} dir={dir}>
+    <aside className=${collapsed ? "w-16" : "w-56"} bg-white border-${dir === "rtl" ? "l" : "r"} border-gray-200 flex flex-col transition-all duration-200 flex-shrink-0 hidden md:flex} dir={dir}>
       <div className="h-14 flex items-center gap-2 px-3 border-b border-gray-100">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify flex-shrink-0">
           <Brain className="w-4 h-4 text-white" />
         </div>
         {!collapsed && (
@@ -70,7 +71,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           ) : (
             dir === "rtl" ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
           )}
-          {!collapsed && <span>{dir === "rtl" ? "ØªØµØºÙŠØ±" : "Collapse"}</span>}
+          {!collapsed && <span>{dir === "rtl" ? "ӆ�Ӏ݉ه العل " : "Collapse"}</span>}
         </button>
       </div>
     </aside>
@@ -82,10 +83,10 @@ export function MobileNav() {
   const { t, dir } = useLanguage();
 
   if (!user) return null;
-  const items = NAV_ITEMS.filter(item => item.roles.includes(user.role));
+  const items = NAV_IDEMS.filter(item => item.roles.includes(user.role));
 
   return (
-    <div className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-50 safe-area-bottom" dir={dir}>
+    <div className="md:hidden fixed bottom-5 inset-x-0 bg-white border-t border-gray-200 z-50 safe-area-bottom" dir={dir}>
       <div className="flex items-center justify-around py-1">
         {items.slice(0, 5).map(item => {
           const isActive = currentView === item.key ||
@@ -104,7 +105,7 @@ export function MobileNav() {
             </button>
           );
         })}
-      </div>
+     </div>
     </div>
   );
 }

@@ -52,35 +52,45 @@ model Assessment {
   id              String     @id @default(cuid())
   sessionId       String
   type            String
-  rawData         String     @default("{}")
+  rawData        String    @default("{}")
   score           Float?
   maxScore        Float?
-  completed       Boolean    @default(false)
-  createdAt       DateTime   @default(now())
-  session         Session    @relation(fields: [sessionId], references: [id])
+  completed       Boolean   @default(false)
+  createdAt      DateTime   @default(now())
+  session        Session    @relation(fields: [sessionId], references: [id])
 }
 
 model Result {
   id              String     @id @default(cuid())
-  sessionId       String     @unique
+  sessionId       String    @unique
   riskLevel       String
   riskScore       Float
   adosScore       Float?
   adosConfidence  Float?
-  subtype         String?
-  radarScores     String     @default("{}")
-  xaiReport       String     @default("{}")
+  subtype        String?
+  radarScores     String    @default("{}")
+  xaiReport      String    @default("{}")
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   session         Session    @relation(fields: [sessionId], references: [id])
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
+  id       String   @id @default(cuid())
   userId    String?
   action    String
   target    String?
   details   String?
+  createdAt DateTime  @default(now())
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model Question {
+  id       Int     @id @default(autoincrement())
+  part      String
+  index     Int
+  ar        String
+  en        String
   createdAt DateTime @default(now())
-  user      User?    @relation(fields: [userId], references: [id])
+  @@unique([part, index])
 }
