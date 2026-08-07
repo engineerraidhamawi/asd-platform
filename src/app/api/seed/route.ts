@@ -1,181 +1,77 @@
-﻿import { NextResponse } from 'next/server';
-import { createHash } from 'crypto';
-import { db } from '@/lib/db';
+﻿import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
-function hashPw(pw: string): string {
-  return createHash('sha256').update(pw + 'asd-salt-2024').digest('hex');
-}
+const prisma = new PrismaClient();
 
-const RADAR_SCORES = {
-  low:       { social: 82, nonverbal: 78, repetitive: 15, sensory: 20, motor: 75, executive: 80 },
-  moderate:  { social: 55, nonverbal: 50, repetitive: 45, sensory: 50, motor: 58, executive: 52 },
-  high:      { social: 30, nonverbal: 28, repetitive: 72, sensory: 68, motor: 35, executive: 32 },
-  critical:  { social: 15, nonverbal: 12, repetitive: 88, sensory: 85, motor: 18, executive: 15 },
-};
+const MCHAT_PART = "mchat";
+const SRS2_PART = "srs2";
+const RBSR_PART = "rbsr";
 
-const XAI_ITEMS = [
-  { feature: 'الابتسامة التلقائية', severity: 'نقص بنسبة 40%', impact: 'عالي', detail: 'تم رصد انخفاض واضح في الابتسامة التلقائية أثناء التفاعل' },
-  { feature: 'التواصل البصري', severity: 'انخفاض بنسبة 35%', impact: 'عالي', detail: 'مدة التثبيت البصري أقل من المتوقع بـ 35%' },
-  { feature: 'حركة العين', severity: 'أنماط غير نمطية', impact: 'متوسط', detail: 'نمط المسح البصري يختلف عن المعدل المرجعي' },
-  { feature: 'نبرة الصوت', severity: 'تنوع محدود', impact: 'متوسط', detail: 'التباين في النبرة والطبقة الصوتية أقل من المعتاد' },
-  { feature: 'زمن رد الفعل', severity: 'بطء بنسبة 25%', impact: 'عالي', detail: 'متوسط زمن الاستجابة أطول بـ 250 مللي ثانية' },
-  { feature: 'السلوكيات النمطية', severity: 'متكررة', impact: 'عالي', detail: 'رصد حركات يد متكررة وتفضيل الروتين' },
-  { feature: 'المرونة المعرفية', severity: 'صعوبة في التبديل', impact: 'متوسط', detail: 'أوقات تبديل المهام أطول بـ 40% من المتوسط' },
-];
-
-const DEFAULT_USERS = [
-  { name: 'مدير النظام', email: 'admin@asd.com', password: 'password123', role: 'admin' },
-  { name: 'د. سارة أحمد', email: 'doctor@asd.com', password: 'password123', role: 'doctor' },
-  { name: 'منى الباحثة', email: 'monitor@asd.com', password: 'password123', role: 'monitor' },
-  { name: 'خالد وليد', email: 'parent@asd.com', password: 'password123', role: 'patient' },
-] as const;
-
-const DEFAULT_QUESTIONS = {
-  mchat: [
-    { ar: 'هل يبدو طفلك مهتماً بالأطفال الآخرين؟', en: 'Does your child seem interested in other children?' },
-    { ar: 'هل يشير طفلك لإظهار الأشياء التي تعجبه؟', en: 'Does your child point to show you things they like?' },
-    { ar: 'هل يجلب طفلك الأشياء إليك ليُريكها؟', en: 'Does your child bring things to you to show you?' },
-    { ar: 'هل يُقلّد طفلك ما تفعله أنت أو آخرون؟', en: 'Does your child imitate what you or others do?' },
-    { ar: 'هل يستجيب طفلك عندما تناديه باسمه؟', en: 'Does your child respond when you call their name?' },
-    { ar: 'هل يُشير طفلك بيدك لطلب المساعدة؟', en: 'Does your child take your hand to get help?' },
-    { ar: 'هل يلوّح طفلك بالوداع؟', en: 'Does your child wave goodbye?' },
-    { ar: 'هل يُظهر طفلك اهتماماً بالألعاب المناسبة لعمره؟', en: 'Does your child show interest in age-appropriate toys?' },
-    { ar: 'هل يحرك طفلك الأشياء ذهاباً وإياباً بشكل متكرر؟', en: 'Does your child move objects back and forth repeatedly?' },
-    { ar: 'هل يستجيب طفلك للأصوات العالية أو المفاجئة؟', en: 'Does your child respond to loud or sudden sounds?' },
-    { ar: 'هل ينظر طفلك مباشرةً إلى عينيك عند الحديث معه؟', en: 'Does your child look directly into your eyes when talking?' },
-    { ar: 'هل يبتسم طفلك عندما تبتسم له؟', en: 'Does your child smile back when you smile at them?' },
-    { ar: 'هل يبادر طفلك باللعب معك أو اللعب به؟', en: 'Does your child initiate play with you or want you to play?' },
-    { ar: 'هل يُظهر طفلك اهتماماً بأشياء غير عادية مقارنة بألعاب الأطفال؟', en: 'Does your child show interest in unusual items vs. typical toys?' },
-    { ar: 'هل يستجيب طفلك لاسمه عندما لا يراك؟', en: 'Does your child respond to their name when they cannot see you?' },
-    { ar: 'هل يستخدم طفلك أصابعه للإشارة إلى الأشياء؟', en: 'Does your child use fingers to point at things?' },
-    { ar: 'هل يحاول طفلك جذب انتباهك لسلوك معين؟', en: 'Does your child try to get your attention to a specific behavior?' },
-    { ar: 'هل يتجنب طفلك التواصل البصري المباشر؟', en: 'Does your child avoid direct eye contact?' },
-    { ar: 'هل يستطيع طفلك ترتيب مكعبات أو ألعاب بشكل مناسب؟', en: 'Can your child stack blocks or toys appropriately?' },
-    { ar: 'هل يُظهر طفلك سلوكيات متكررة أو غير عادية؟', en: 'Does your child display repetitive or unusual behaviors?' },
-  ],
-  srs: [
-    { ar: 'يُظهر طفلك مهارات اجتماعية مناسبة لعمره', en: 'My child shows age-appropriate social skills' },
-    { ar: 'يلتقي طفلك بنظرة الآخرين أثناء الحديث', en: 'My child makes eye contact during conversation' },
-    { ar: 'يفهم طفلك نكات الآخرين أو نواياهم الكامنة', en: 'My child understands jokes or hidden intentions of others' },
-    { ar: 'يبدو طفلك مرتاحاً في المواقف الاجتماعية الجديدة', en: 'My child seems comfortable in new social situations' },
-    { ar: 'يتفاعل طفلك بشكل طبيعي مع أقرانه', en: 'My child interacts naturally with peers' },
-    { ar: 'يستطيع طفلك التعبير عن مشاعره بشكل واضح', en: 'My child can express their feelings clearly' },
-    { ar: 'يُظهر طفلك مرونة عند تغيير الروتين', en: 'My child shows flexibility when routines change' },
-    { ar: 'يُحب طفلك الأنشطة الجماعية أو اللعب مع الآخرين', en: 'My child enjoys group activities or playing with others' },
-    { ar: 'يُظهر طفلك تعاطفاً مع مشاعر الآخرين', en: "My child shows empathy for others' feelings" },
-    { ar: 'يُميّز طفلك التعبيرات الوجهية المختلفة بدقة', en: 'My child can distinguish different facial expressions accurately' },
-  ],
-  rbsr: [
-    { ar: 'يتكرر ترديد طفلك للكلمات أو العبارات', en: 'My child repeats words or phrases repeatedly' },
-    { ar: 'يقوم طفلك بحركات يدية متكررة (مثل التلويت أو الطبطبة)', en: 'My child makes repetitive hand movements (flapping, tapping)' },
-    { ar: 'يلتفت طفلك أو يهز جسمه بشكل متكرر', en: 'My child rocks or sways body repeatedly' },
-    { ar: 'يُصر طفلك على ترتيب الأشياء بطريقة معينة', en: 'My child insists on arranging objects in a specific order' },
-    { ar: 'يُظهر طفلك اهتماماً شديداً بأجزاء معينة من الأشياء', en: 'My child shows intense interest in specific parts of objects' },
-    { ar: 'يتنفس طفلك أو يشم الأشياء بشكل متكرر', en: 'My child sniffs or smells objects frequently' },
-    { ar: 'يُظهر طفلك حساسية عالية للأصوات أو الأضواء', en: 'My child shows high sensitivity to sounds or lights' },
-    { ar: 'يمشي طفلك على أطراف أصابعه بشكل متكرر', en: 'My child frequently walks on tiptoes' },
-    { ar: 'يُكرر طفلك مشاهدة نفس الفيديو أو الصورة', en: 'My child repeatedly watches the same video or image' },
-    { ar: 'يُظهر طفلك انزعاجاً شديداً عند تغيير الروتين اليومي', en: 'My child shows severe distress when changing daily routine' },
-  ],
+const SCALE_INFO = {
+  [MCHAT_PART]: { max: 3, labelEN: "M-CHAT-R/F", labelAR: "M-CHAT-R/F" },
+  [SRS2_PART]:  { max: 5, labelEN: "SRS-2", labelAR: "SRS-2" },
+  [RBSR_PART]:  { max: 4, labelEN: "RBS-R", labelAR: "RBS-R" },
 } as const;
 
-export async function POST() {
-  try {
-    const questionCount = await db.question.count();
-    if (questionCount === 0) {
-      const allQ: { part: string; index: number; ar: string; en: string }[] = [];
-      for (const [part, questions] of Object.entries(DEFAULT_QUESTIONS)) {
-        for (let i = 0; i < questions.length; i++) {
-          allQ.push({ part, index: i, ar: questions[i].ar, en: questions[i].en });
-        }
-      }
-      await db.question.createMany({ data: allQ });
-    }
+const DEFAULT_QUESTIONS = [
+  { part: MCHAT_PART, index: 1, ar: "Does your child look at you when you call his/her name?", en: "هل ينظر طفلك إليك عندما تناديه باسمه؟" },
+  { part: MCHAT_PART, index: 2, ar: "Does your child point with his/her index finger to show you something interesting?", en: "هل يشير طفلك بإصبعه السبابة لإظهار شيء مثير للاهتمام؟" },
+  { part: MCHAT_PART, index: 3, ar: "Does your child play pretend or make-believe?", en: "هل يلعب طفلك أدوارًا تخيلية أو يتظاهر؟" },
+  { part: MCHAT_PART, index: 4, ar: "Does your child follow your gaze when you look at something across the room?", en: "هل يتبع طفلك نظرك عندما تنظر إلى شيء عبر الغرفة؟" },
+  { part: MCHAT_PART, index: 5, ar: "Does your child respond when you smile at him/her?", en: "هل يستجيب طفلك عندما تبتسم له؟" },
+  { part: MCHAT_PART, index: 6, ar: "Does your child try to get your attention to show you something?", en: "هل يحاول طفلك لفت انتباهك لإظهارك شيئًا؟" },
+  { part: MCHAT_PART, index: 7, ar: "Does your child understand what you say?", en: "هل يفهم طفلك ما تقوله؟" },
+  { part: MCHAT_PART, index: 8, ar: "Does your child sometimes stare at nothing or wander with no purpose?", en: "هل أحيانًا يحدق طفلك في الفراغ أو يتجول بدون هدف؟" },
+  { part: MCHAT_PART, index: 9, ar: "Does your child look at your face to check your reaction?", en: "هل ينظر طفلك إلى وجهك للتحقق من ردة فعلك؟" },
+  { part: MCHAT_PART, index: 10, ar: "Does your child enjoy playing peek-a-boo or hide-and-seek?", en: "هل يستمتع طفلك بلعبة الغميضة أو الاختباء؟" },
+  { part: MCHAT_PART, index: 11, ar: "Does your child respond to his/her name when called?", en: "هل يستجيب طفلك لاسمه عند مناداته؟" },
+  { part: MCHAT_PART, index: 12, ar: "Does your child point to ask for something or get help?", en: "هل يشير طفلك لطلب شيء أو طلب المساعدة؟" },
+  { part: MCHAT_PART, index: 13, ar: "Does your child imitate your actions (e.g., clap, wave)?", en: "هل يقلد طفلك حركاتك (مثل التصفيق أو التلويح)؟" },
+  { part: MCHAT_PART, index: 14, ar: "Does your child walk alone?", en: "هل يمشي طفلك بمفرده؟" },
+  { part: MCHAT_PART, index: 15, ar: "Does your child look at things you are looking at?", en: "هل ينظر طفلك إلى الأشياء التي تنظر إليها؟" },
+  { part: MCHAT_PART, index: 16, ar: "Does your child make unusual finger movements near his/her face?", en: "هل يقوم طفلك بحركات أصابع غير عادية قرب وجهه؟" },
+  { part: MCHAT_PART, index: 17, ar: "Does your child try to attract your attention to his/her own activity?", en: "هل يحاول طفلك لفت انتباهك إلى نشاطه الخاص؟" },
+  { part: MCHAT_PART, index: 18, ar: "Does your child get upset by everyday noises?", en: "هل يزعج طفلك الضوضاء اليومية العادية؟" },
+  { part: MCHAT_PART, index: 19, ar: "Does your child show objects to you?", en: "هل يريك طفلك الأشياء؟" },
+  { part: MCHAT_PART, index: 20, ar: "Does your child enjoy being swung or bounced on your knee?", en: "هل يستمتع طفلك بالتأرجح أو القفز على ركبتك؟" },
+  { part: SRS2_PART, index: 1, ar: "I am interested in a narrow range of topics.", en: "أهتم بنطاق ضيق من المواضيع." },
+  { part: SRS2_PART, index: 2, ar: "I can tell when someone is not interested in what I am saying.", en: "أستطيع أن أتعرف عندما لا يكون شخص ما مهتمًا بما أقوله." },
+  { part: SRS2_PART, index: 3, ar: "I have trouble understanding when people are joking.", en: "أواجه صعوبة في فهم عندما يمزح الناس." },
+  { part: SRS2_PART, index: 4, ar: "I find it easy to make friends.", en: "أجد من السهل تكوين أصدقاء." },
+  { part: SRS2_PART, index: 5, ar: "I find it difficult to work out what people are thinking or feeling.", en: "أجد صعوبة في معرفة ما يفكر أو يشعر به الآخرون." },
+  { part: SRS2_PART, index: 6, ar: "I find it hard to know what to say in social situations.", en: "أجد صعوبة في معرفة ما أقوله في المواقف الاجتماعية." },
+  { part: SRS2_PART, index: 7, ar: "I feel comfortable in social situations.", en: "أشعر بالراحة في المواقف الاجتماعية." },
+  { part: SRS2_PART, index: 8, ar: "I have difficulty understanding people's facial expressions.", en: "أواجه صعوبة في فهم تعبيرات وجوه الناس." },
+  { part: SRS2_PART, index: 9, ar: "I can keep up with a conversation easily.", en: "أستطيع مواكبة المحادثة بسهولة." },
+  { part: SRS2_PART, index: 10, ar: "I notice small sounds that others do not notice.", en: "ألاحظ أصواتًا صغيرة لا يلاحظها الآخرون." },
+  { part: RBSR_PART, index: 1, ar: "Rocks body or whole body movements.", en: "يتأرجح الجسم أو حركات الجسم كاملة." },
+  { part: RBSR_PART, index: 2, ar: "Spins objects or self.", en: "يدور الأشياء أو يدور حول نفسه." },
+  { part: RBSR_PART, index: 3, ar: "Flaps hands or fingers.", en: "يحرك اليدين أو الأصابع." },
+  { part: RBSR_PART, index: 4, ar: "Paces back and forth.", en: "يمشي ذهابًا وإيابًا." },
+  { part: RBSR_PART, index: 5, ar: "Repeats words or phrases over and over.", en: "يكرر الكلمات أو العبارات مرارًا وتكرارًا." },
+  { part: RBSR_PART, index: 6, ar: "Insists on sameness in routines.", en: "يصر على التشابه في الروتين." },
+  { part: RBSR_PART, index: 7, ar: "Gets upset by small changes in routine.", en: "يضطرب بسبب تغييرات صغيرة في الروتين." },
+  { part: RBSR_PART, index: 8, ar: "Lines up toys or objects.", en: "يصطف الألعاب أو الأشياء في خط." },
+  { part: RBSR_PART, index: 9, ar: "Fascinated with spinning objects or wheels.", en: "منبهر بالأشياء الدوارة أو العجلات." },
+  { part: RBSR_PART, index: 10, ar: "Has unusual sensory interests (smells, textures, sounds).", en: "لديه اهتمامات حسية غير عادية (روائح، ملمس، أصوات)." },
+] as const;
 
-    const userCount = await db.user.count();
-    let doctorId: string | undefined;
-    let parentId: string | undefined;
+export async function POST(request: NextRequest) {
+  const allQ = DEFAULT_QUESTIONS;
 
-    if (userCount === 0) {
-      const hashedPasswords = DEFAULT_USERS.map(u => hashPw(u.password));
-      const users = await Promise.all(
-        DEFAULT_USERS.map((u, i) =>
-          db.user.create({
-            data: { name: u.name, email: u.email, password: hashedPasswords[i], role: u.role },
-          })
-        )
-      );
-      const doctorUser = users.find(u => u.role === 'doctor');
-      const parentUser = users.find(u => u.role === 'patient');
-      if (doctorUser) doctorId = doctorUser.id;
-      if (parentUser) parentId = parentUser.id;
-    } else {
-      const doctorUser = await db.user.findFirst({ where: { role: 'doctor' } });
-      const parentUser = await db.user.findFirst({ where: { role: 'patient' } });
-      if (doctorUser) doctorId = doctorUser.id;
-      if (parentUser) parentId = parentUser.id;
-    }
+  const questionCount = await prisma.question.count();
 
-    const patientCount = await db.patient.count();
-    if (patientCount > 0) {
-      return NextResponse.json({ message: 'Data exists', seeded: true, questions: questionCount > 0 });
-    }
-
-    const patients = await Promise.all([
-      db.patient.create({ data: { name: 'أحمد خالد', age: 4, gender: 'male', notes: 'إحالة من طبيب الأطفال', createdById: doctorId, parentId: parentId } }),
-      db.patient.create({ data: { name: 'فاطمة سعيد', age: 6, gender: 'female', notes: 'تأخر في النطق', createdById: doctorId, parentId: parentId } }),
-      db.patient.create({ data: { name: 'عمر يوسف', age: 3, gender: 'male', notes: 'سلوكيات نمطية', createdById: doctorId } }),
-      db.patient.create({ data: { name: 'نورة حسين', age: 5, gender: 'female', notes: 'متابعة روتينية', createdById: doctorId } }),
-    ]);
-
-    const risks: Array<'low' | 'moderate' | 'high' | 'critical'> = ['low', 'moderate', 'high', 'critical'];
-    const subtypes = ['withdrawn', 'active-odd', 'shy', 'motor'];
-
-    for (let i = 0; i < 3; i++) {
-      const patient = patients[i];
-      const risk = risks[i];
-      const radar = RADAR_SCORES[risk];
-      const xai = XAI_ITEMS.slice(0, 3 + i).map((item, j) => ({
-        ...item,
-        score: Math.max(0, 100 - (j + 1) * 12 - i * 8),
-      }));
-
-      const session = await db.session.create({
-        data: { patientId: patient.id, status: 'completed', consentedAt: new Date(), completedAt: new Date() },
-      });
-
-      await db.assessment.createMany({
-        data: [
-          { sessionId: session.id, type: 'facial', rawData: '{}', score: 60 + i * 15, maxScore: 100, completed: true },
-          { sessionId: session.id, type: 'motor', rawData: '{}', score: 55 + i * 12, maxScore: 100, completed: true },
-          { sessionId: session.id, type: 'cognitive', rawData: '{}', score: 65 + i * 10, maxScore: 100, completed: true },
-          { sessionId: session.id, type: 'questionnaire', rawData: '{}', score: risk === 'low' ? 2 : risk === 'moderate' ? 5 : risk === 'high' ? 8 : 12, maxScore: 20, completed: true },
-        ],
-      });
-
-      await db.result.create({
-        data: {
-          sessionId: session.id,
-          riskLevel: risk,
-          riskScore: risk === 'low' ? 25 : risk === 'moderate' ? 52 : risk === 'high' ? 78 : 93,
-          adosScore: risk === 'low' ? 2 : risk === 'moderate' ? 5 : risk === 'high' ? 8 : 10,
-          adosConfidence: 0.85 + i * 0.03,
-          subtype: subtypes[i],
-          radarScores: JSON.stringify(radar),
-          xaiReport: JSON.stringify(xai),
-        },
-      });
-    }
-
-    return NextResponse.json({
-      message: 'Seeded successfully',
-      seeded: true,
-      users: DEFAULT_USERS.length,
-      patients: patients.length,
-      questions: questionCount === 0 ? allQ.length : questionCount,
-    });
-  } catch (error) {
-    console.error('Seed error:', error);
-    return NextResponse.json({ error: 'Seed failed' }, { status: 500 });
+  if (questionCount === 0) {
+    await prisma.question.createMany({ data: allQ as any });
   }
+
+  const questions = await prisma.question.findMany({
+    orderBy: [{ part: "asc" }, { index: "asc" }],
+  });
+
+  return NextResponse.json({
+    message: questionCount === 0 ? "Seeded successfully" : "Data already exists",
+    seeded: questionCount === 0,
+    questions,
+  });
 }
