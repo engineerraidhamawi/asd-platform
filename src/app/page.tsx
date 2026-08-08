@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -10,6 +10,7 @@ import { PatientListView } from "@/components/asd/PatientListView";
 import { PatientDetailView } from "@/components/asd/PatientDetailView";
 import { AdminUsersView } from "@/components/asd/AdminUsersView";
 import { AuditLogView } from "@/components/asd/AuditLogView";
+import { AdminQuestionsView } from "@/components/asd/AdminQuestionsView";
 import { MonitorDataView } from "@/components/asd/MonitorDataView";
 import { QuestionnaireView } from "@/components/asd/QuestionnaireView";
 import { AnalyzingView } from "@/components/asd/AnalyzingView";
@@ -81,6 +82,7 @@ export default function PlatformPage() {
       case "patient-detail": return <PatientDetailView />;
       case "new-assessment": return <NewAssessmentView />;
       case "admin-users": return <AdminUsersView />;
+      case "admin-questions": return <AdminQuestionsView />;
       case "audit-log": return <AuditLogView />;
       case "monitor-data": return <MonitorDataView />;
       case "my-assessments": return <MyAssessmentsView />;
@@ -120,7 +122,7 @@ export default function PlatformPage() {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs gap-1 text-gray-500">
               <Globe className="w-3 h-3" />
-              {lang === "ar" ? "EN" : "Ø¹Ø±Ø¨ÙŠ"}
+              {lang === "ar" ? "EN" : "Ã˜Â¹Ã˜Â±Ã˜Â¨Ã™Å "}
             </Button>
             {user && (
               <>
@@ -218,7 +220,7 @@ function NewAssessmentView() {
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">{t("notes")}</label>
-          <input value={notes} onChange={e => setNotes(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder={lang === "ar" ? "Ù…Ù„Ø§Ø­Ø¸Ø§Øª Ø§Ø®ØªÙŠØ§Ø±ÙŠØ©" : "Optional notes"} />
+          <input value={notes} onChange={e => setNotes(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder={lang === "ar" ? "Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â±Ã™Å Ã˜Â©" : "Optional notes"} />
         </div>
         <div className="flex gap-2">
           <Button onClick={handleCreate} disabled={!name.trim() || creating} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
