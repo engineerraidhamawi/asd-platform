@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -28,7 +28,7 @@ export function AdminQuestionsView() {
       .then((grouped: Record<string, { ar: string; en: string }[]>) => {
         setCurrentCounts({
           mchat: grouped.mchat?.length || 0,
-          srs: grouped.srs?.length || 0,
+          srs: grouped.srs2?.length || 0,
           rbsr: grouped.rbsr?.length || 0,
         });
       })
