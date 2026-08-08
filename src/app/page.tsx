@@ -122,7 +122,7 @@ export default function PlatformPage() {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs gap-1 text-gray-500">
               <Globe className="w-3 h-3" />
-              {lang === "ar" ? "EN" : "Ã˜Â¹Ã˜Â±Ã˜Â¨Ã™Å "}
+              {lang === "ar" ? "EN" : "AR"}
             </Button>
             {user && (
               <>
@@ -220,7 +220,7 @@ function NewAssessmentView() {
         </div>
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">{t("notes")}</label>
-          <input value={notes} onChange={e => setNotes(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder={lang === "ar" ? "Ã™â€¦Ã™â€žÃ˜Â§Ã˜Â­Ã˜Â¸Ã˜Â§Ã˜Âª Ã˜Â§Ã˜Â®Ã˜ÂªÃ™Å Ã˜Â§Ã˜Â±Ã™Å Ã˜Â©" : "Optional notes"} />
+          <input value={notes} onChange={e => setNotes(e.target.value)} className="w-full h-10 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder={lang === "ar" ? "\u0645\u0644\u0627\u062D\u0638\u0627\u062A \u0627\u062E\u062A\u064A\u0627\u0631\u064A\u0629" : "Optional notes"} />
         </div>
         <div className="flex gap-2">
           <Button onClick={handleCreate} disabled={!name.trim() || creating} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
