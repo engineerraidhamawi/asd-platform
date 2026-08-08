@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -33,7 +33,7 @@ export default function PlatformPage() {
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
-    fetch("/api/seed", { method: "POST" }).then(() => {
+    Promise.resolve().then(() => {
       const userId = localStorage.getItem("userId");
       if (userId) {
         fetch("/api/auth/me", { headers: { "x-user-id": userId } })
