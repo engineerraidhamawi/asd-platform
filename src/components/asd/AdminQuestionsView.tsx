@@ -64,10 +64,10 @@ export function AdminQuestionsView() {
         });
         loadCounts();
       } else {
-        setResult({ success: false, message: data.error || 'Upload failed' });
+        setResult({ success: false, message: data.error || (lang === 'ar' ? 'فشل رفع الملف' : 'Upload failed') });
       }
     } catch {
-      setResult({ success: false, message: 'An error occurred during upload' });
+      setResult({ success: false, message: lang === 'ar' ? 'حدث خطأ أثناء رفع الملف' : 'An error occurred during upload' });
     }
 
     setUploading(false);
@@ -108,7 +108,7 @@ export function AdminQuestionsView() {
           {t('questionsManagement')}
         </h1>
         <p className='text-sm text-gray-500 mt-1'>
-          Manage questions for all three questionnaires via Excel
+          {lang === 'ar' ? 'إدارة أسئلة الاستبيانات الثلاثة عبر ملف Excel' : 'Manage questions for all three questionnaires via Excel'}
         </p>
       </div>
 
@@ -145,14 +145,14 @@ export function AdminQuestionsView() {
           >
             <Upload className='w-10 h-10 text-gray-400 mx-auto mb-3' />
             <p className='text-sm font-medium text-gray-700'>
-              Drag and drop Excel file here or
+              {lang === 'ar' ? 'اسحب ملف Excel هنا أو' : 'Drag and drop Excel file here or'}
             </p>
             <label className='inline-block mt-2'>
               <span
                 className='text-sm text-emerald-600 hover:text-emerald-700 cursor-pointer font-medium underline'
                 onClick={() => fileInputRef.current?.click()}
               >
-                browse files
+                {lang === 'ar' ? 'اختر ملفاً' : 'browse files'}
               </span>
               <input
                 ref={fileInputRef}
@@ -169,7 +169,7 @@ export function AdminQuestionsView() {
           {uploading && (
             <div className='flex items-center justify-center gap-2 mt-4 text-sm text-emerald-600'>
               <div className='w-4 h-4 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin' />
-              Uploading file...
+              {lang === 'ar' ? 'جاري رفع الملف...' : 'Uploading file...'}
             </div>
           )}
 
@@ -191,7 +191,7 @@ export function AdminQuestionsView() {
         <CardContent className='p-5 space-y-3'>
           <h3 className='font-bold text-gray-900 text-sm flex items-center gap-2'>
             <FileSpreadsheet className='w-4 h-4 text-gray-500' />
-            Required File Format
+            {lang === 'ar' ? 'تنسيق الملف المطلوب' : 'Required File Format'}
           </h3>
           <div className='overflow-x-auto'>
             <table className='w-full text-xs border border-gray-200 rounded-lg overflow-hidden'>
@@ -218,7 +218,7 @@ export function AdminQuestionsView() {
             </table>
           </div>
           <p className='text-xs text-gray-500'>
-            Row 1: Column headers (ignored). Following rows: questions for each part. Uploading replaces all existing questions.
+            {lang === 'ar' ? 'الصف الأول: عناوين الأعمدة (يتم تجاهلها). الأسطر التالية: أسئلة كل جزء. رفع الملف يستبدل جميع الأسئلة الحالية.' : 'Row 1: Column headers (ignored). Following rows: questions for each part. Uploading replaces all existing questions.'}
           </p>
         </CardContent>
       </Card>
@@ -226,13 +226,13 @@ export function AdminQuestionsView() {
       <div className='flex justify-center'>
         <Button variant='outline' onClick={handleDownloadTemplate} className='gap-2 text-sm'>
           <Download className='w-4 h-4' />
-          Download CSV Template
+          {lang === 'ar' ? 'تحميل قالب' : 'Download Template'}
         </Button>
       </div>
 
       {totalQuestions > 0 && (
         <p className='text-center text-xs text-gray-400'>
-          Total questions currently in database: {totalQuestions}
+          {lang === 'ar' ? 'إجمالي الأسئلة الحالية: ' : 'Total questions currently in database: '}{totalQuestions}
         </p>
       )}
     </div>
