@@ -198,8 +198,8 @@ export function ResultsView() {
         <thead>
           <tr className='border-b border-slate-200'>
             <th className='text-left py-2 px-3 text-xs text-slate-500 font-medium w-12'>#</th>
-            <th className='text-left py-2 px-3 text-xs text-slate-500 font-medium'>{t('answerLabel')}</th>
-            <th className='text-left py-2 px-3 text-xs text-slate-500 font-medium w-24'>{t('scoreLabel')}</th>
+            <th className='text-left py-2 px-3 text-xs text-slate-500 font-medium'>{t('answerLabel' as any)}</th>
+            <th className='text-left py-2 px-3 text-xs text-slate-500 font-medium w-24'>{t('scoreLabel' as any)}</th>
           </tr>
         </thead>
         <tbody>
@@ -209,9 +209,9 @@ export function ResultsView() {
               <td className='py-2 px-3 font-medium text-slate-700'>{r.answer}</td>
               <td className='py-2 px-3'>
                 {r.isConcern ? (
-                  <span className='text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium'>{t('concernFlag')}</span>
+                  <span className='text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium'>{t('concernFlag' as any)}</span>
                 ) : (
-                  <span className='text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium'>{t('normalFlag')}</span>
+                  <span className='text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium'>{t('normalFlag' as any)}</span>
                 )}
               </td>
             </tr>
@@ -298,8 +298,8 @@ export function ResultsView() {
               className='w-full flex items-center justify-between'
             >
               <div>
-                <h2 className='text-base font-bold text-slate-800'>{t('questionBreakdown')}</h2>
-                <p className='text-xs text-slate-500 mt-1'>{t('questionBreakdownDesc')}</p>
+                <h2 className='text-base font-bold text-slate-800'>{t('questionBreakdown' as any)}</h2>
+                <p className='text-xs text-slate-500 mt-1'>{t('questionBreakdownDesc' as any)}</p>
               </div>
               {showBreakdown ? <ChevronUp className='w-5 h-5 text-slate-400' /> : <ChevronDown className='w-5 h-5 text-slate-400' />}
             </button>
@@ -307,15 +307,15 @@ export function ResultsView() {
             {showBreakdown && (
               <div className='mt-4 space-y-5'>
                 <div>
-                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('mchatBreakdown')}</h3>
+                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('mchatBreakdown' as any)}</h3>
                   {breakdownTable(getMchatRows())}
                 </div>
                 <div>
-                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('srsBreakdown')}</h3>
+                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('srsBreakdown' as any)}</h3>
                   {breakdownTable(getSrsRows())}
                 </div>
                 <div>
-                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('rbsrBreakdown')}</h3>
+                  <h3 className='text-sm font-semibold text-slate-700 mb-2'>{t('rbsrBreakdown' as any)}</h3>
                   {breakdownTable(getRbsrRows())}
                 </div>
               </div>
