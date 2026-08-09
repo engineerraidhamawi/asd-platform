@@ -51,9 +51,9 @@ export function PatientListView() {
   const [creating, setCreating] = useState(false);
 
   const loadPatients = () => {
-    fetch('/api/patients')
+    fetch('/api/patients', { headers: { 'x-user-id': localStorage.getItem('userId') || '' } })
       .then(r => r.json())
-      .then(setPatients)
+      .then(d => { if (Array.isArray(d)) return d; return []; }).then(d => { if (Array.isArray(d)) return d; return []; }).then(setPatients)
       .catch(() => {})
       .finally(() => setLoading(false));
   };
