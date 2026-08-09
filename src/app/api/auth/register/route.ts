@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'crypto';
 import { db } from '@/lib/db';
 import { logAction } from '@/lib/audit';
 
@@ -14,8 +13,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
     }
 
+    if (password.length < 6) {
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+    }
+
     if (role && !VALID_ROLES.includes(role)) {
-      return NextResponse.json({ error: `Invalid role. Must be one of: ${VALID_ROLES.join(', ')}` }, { status: 400 });
+      return NextResponse.json({ error: Invalid role. Must be one of: {VALID_ROLES.join(', ')} }, { status: 400 });
     }
 
     const existing = await db.user.findUnique({ where: { email } });
@@ -23,7 +26,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
     }
 
-    const hashedPassword = createHash('sha256').update(password + 'asd-salt-2024').digest('hex');
+    const bcrypt = await import('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await db.user.create({
       data: {
@@ -34,7 +38,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logAction('USER_CREATED', user.id, `New ${role || 'doctor'} user: ${name} (${email})`, createdById || user.id);
+    logAction('USER_CREATED', user.id, New {role || 'doctor'} user: {name} ({email}), createdById || user.id);
 
     const { password: _, ...userWithoutPassword } = user;
     return NextResponse.json({ user: userWithoutPassword }, { status: 201 });

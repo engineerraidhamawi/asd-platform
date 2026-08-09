@@ -160,6 +160,8 @@ export default function PlatformPage() {
       )}
 
       {user && !isAssessmentFlow && <MobileNav />}
+      <ToastContainer />
+      <ToastContainer />
     </div>
   );
 }

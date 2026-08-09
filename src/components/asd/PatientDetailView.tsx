@@ -60,10 +60,9 @@ export function PatientDetailView() {
 
   useEffect(() => {
     if (!selectedPatientId) return;
-    fetch('/api/patients')
+    fetch(/api/patients/{selectedPatientId})
       .then(r => r.json())
-      .then((patients: PatientData[]) => {
-        const p = patients.find(pt => pt.id === selectedPatientId);
+      .then((p: PatientData) => {
         if (p) {
           setPatient(p);
           const completed = p.sessions.filter(s => s.result).sort((a, b) =>
