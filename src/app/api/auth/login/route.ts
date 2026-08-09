@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { logAction } from '@/lib/audit';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     let passwordValid = false;
-    if (user.password.startsWith('')) {
+    if (user.password.startsWith('$2')) {
       passwordValid = bcrypt.compareSync(password, user.password);
     } else {
       const hashedInput = createHash('sha256').update(password + 'asd-salt-2024').digest('hex');
@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
         db.user.update({ where: { id: user.id }, data: { password: newHash } }).catch(() => {});
       }
     }
+
     if (!passwordValid) {
-      logAction('LOGIN_FAILED', user.id, 'Wrong password', user.id);
+      logAction('LOGIN_FAILED', user.id, 'Wrong password for ' + email, user.id);
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 

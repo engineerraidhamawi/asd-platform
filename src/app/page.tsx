@@ -19,6 +19,8 @@ import { ConsentView } from "@/components/asd/ConsentView";
 import { MyAssessmentsView } from "@/components/asd/MyAssessmentsView";
 import { Sidebar, MobileNav } from "@/components/asd/Sidebar";
 import { Brain, Globe, LogOut, Shield, Menu, X } from "lucide-react";
+import { ToastContainer } from "@/components/asd/ToastContainer";
+import { useNotifStore } from "@/store/useNotifStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -159,6 +161,9 @@ export default function PlatformPage() {
         </footer>
       )}
       {user && !isAssessmentFlow && <MobileNav />}
+
+    {/* Toast Notifications */}
+    <ToastContainer />
     </div>
   );
 }

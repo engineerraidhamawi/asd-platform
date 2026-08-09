@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
 import { logAction } from '@/lib/audit';
-import bcrypt from 'bcryptjs';
 
 const VALID_ROLES = ['admin', 'doctor', 'monitor', 'patient'];
 
@@ -12,10 +12,6 @@ export async function POST(request: NextRequest) {
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
-    }
-
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
     if (role && !VALID_ROLES.includes(role)) {
@@ -30,7 +26,12 @@ export async function POST(request: NextRequest) {
     const hashedPassword = bcrypt.hashSync(password, 12);
 
     const user = await db.user.create({
-      data: { name, email, password: hashedPassword, role: role || 'doctor' },
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: role || 'doctor',
+      },
     });
 
     logAction('USER_CREATED', user.id, 'New ' + (role || 'doctor') + ' user: ' + name + ' (' + email + ')', createdById || user.id);

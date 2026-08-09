@@ -5,6 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Brain, Check } from 'lucide-react';
+import { useNotifStore } from '@/store/useNotifStore';
 
 const STEP_KEYS = [
   'stepExtractFace',

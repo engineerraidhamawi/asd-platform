@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain
+  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain, Download
 } from 'lucide-react';
 import { RadarChart } from '@/components/asd/RadarChart';
 
@@ -61,19 +61,17 @@ export function PatientDetailView() {
   useEffect(() => {
     if (!selectedPatientId) return;
     fetch('/api/patients/' + selectedPatientId)
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject())
       .then((p: PatientData) => {
-        if (p) {
-          setPatient(p);
-          const completed = p.sessions.filter(s => s.result).sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          if (completed.length > 0) {
-            let result = completed[0].result!;
-            if (typeof result.radarScores === 'string') result = { ...result, radarScores: JSON.parse(result.radarScores) };
-            if (typeof result.xaiReport === 'string') result = { ...result, xaiReport: JSON.parse(result.xaiReport) };
-            setSelectedResult(result);
-          }
+        setPatient(p);
+        const completed = p.sessions.filter(s => s.result).sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        if (completed.length > 0) {
+          let result = completed[0].result!;
+          if (typeof result.radarScores === 'string') result = { ...result, radarScores: JSON.parse(result.radarScores) };
+          if (typeof result.xaiReport === 'string') result = { ...result, xaiReport: JSON.parse(result.xaiReport) };
+          setSelectedResult(result);
         }
       })
       .catch(() => {})
@@ -132,9 +130,23 @@ export function PatientDetailView() {
                 </div>
               </div>
             </div>
-            <Button onClick={handleStartAssessment} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+            <div className="flex items-center gap-2">
+              {selectedResult && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const sid = patient.sessions.find(s => s.result?.id === selectedResult.id)?.id;
+                    if (sid) window.open('/api/export/pdf?sessionId=' + sid, '_blank');
+                  }}
+                  className="gap-2 border-gray-200"
+                >
+                  <Download className="w-4 h-4" /> {t('downloadReport')}
+                </Button>
+              )}
+              <Button onClick={handleStartAssessment} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
               <Activity className="w-4 h-4" /> {t('startAssessment')}
             </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

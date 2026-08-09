@@ -110,7 +110,7 @@ export function HistoryView() {
                       {worsened && <span className='text-xs text-red-600'>{lang === 'ar' ? '\u2191 \u062a\u062f\u0647\u0648\u0631' : '\u2191 Worsened'}</span>}
                     </div>
                     <p className='text-sm font-medium'>
-                      {lang === 'ar' ? '\u062f\u0631\u062c\u0629 \u0627\u0644\u062e\u0637\u0631' : 'Risk Score'}: <span className='tabular-nums'>{r.riskPercent || r.riskScore}</span>/100
+                      {lang === 'ar' ? '\u062f\u0631\u062c\u0629 \u0627\u0644\u062e\u0637\u0631' : 'Risk Score'}: <span className='tabular-nums'>{r.riskScore}</span>/100
                     </p>
                     <p className='text-xs text-gray-500'>
                       ADOS: {r.adosScore?.toFixed(1)} \u00b7 {lang === 'ar' ? '\u062b\u0642\u0629' : 'Confidence'}: {Math.round((r.adosConfidence || 0) * 100)}%
