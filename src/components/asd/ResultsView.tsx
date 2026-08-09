@@ -159,7 +159,7 @@ export function ResultsView() {
   }
 
   const getMchatRows = () => {
-    const rows = [];
+    const rows: any[] = [];
     for (let i = 0; i < 20; i++) {
       const val = questData['mchat_' + i];
       const label = val !== undefined ? (lang === 'ar' ? MCHAT_LABELS_AR[val] : MCHAT_LABELS_EN[val]) : '-';
@@ -170,7 +170,7 @@ export function ResultsView() {
   };
 
   const getSrsRows = () => {
-    const rows = [];
+    const rows: any[] = [];
     for (let i = 0; i < 10; i++) {
       const val = questData['srs_' + i];
       const idx = val !== undefined ? val - 1 : -1;
@@ -182,7 +182,7 @@ export function ResultsView() {
   };
 
   const getRbsrRows = () => {
-    const rows = [];
+    const rows: any[] = [];
     for (let i = 0; i < 10; i++) {
       const val = questData['rbsr_' + i];
       const label = val !== undefined ? (lang === 'ar' ? RBSR_LABELS_AR[val] : RBSR_LABELS_EN[val]) : '-';
