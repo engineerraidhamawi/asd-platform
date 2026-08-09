@@ -60,7 +60,7 @@ export function PatientDetailView() {
 
   useEffect(() => {
     if (!selectedPatientId) return;
-    fetch(/api/patients/{selectedPatientId})
+    fetch('/api/patients/' + selectedPatientId)
       .then(r => r.json())
       .then((p: PatientData) => {
         if (p) {

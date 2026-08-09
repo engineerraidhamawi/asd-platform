@@ -1,15 +1,15 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface Notification {
   id: string;
   message: string;
-  type: "success" | "error" | "info" | "warning";
+  type: 'success' | 'error' | 'info' | 'warning';
   duration?: number;
 }
 
 interface NotifState {
   notifications: Notification[];
-  add: (n: Omit<Notification, "id">) => void;
+  add: (n: Omit<Notification, 'id'>) => void;
   remove: (id: string) => void;
   clear: () => void;
 }

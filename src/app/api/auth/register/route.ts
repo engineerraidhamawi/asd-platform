@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { logAction } from '@/lib/audit';
+import bcrypt from 'bcryptjs';
 
 const VALID_ROLES = ['admin', 'doctor', 'monitor', 'patient'];
 
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (role && !VALID_ROLES.includes(role)) {
-      return NextResponse.json({ error: Invalid role. Must be one of: {VALID_ROLES.join(', ')} }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid role. Must be one of: ' + VALID_ROLES.join(', ') }, { status: 400 });
     }
 
     const existing = await db.user.findUnique({ where: { email } });
@@ -26,19 +27,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
     }
 
-    const bcrypt = await import('bcryptjs');
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = bcrypt.hashSync(password, 12);
 
     const user = await db.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: role || 'doctor',
-      },
+      data: { name, email, password: hashedPassword, role: role || 'doctor' },
     });
 
-    logAction('USER_CREATED', user.id, New {role || 'doctor'} user: {name} ({email}), createdById || user.id);
+    logAction('USER_CREATED', user.id, 'New ' + (role || 'doctor') + ' user: ' + name + ' (' + email + ')', createdById || user.id);
 
     const { password: _, ...userWithoutPassword } = user;
     return NextResponse.json({ user: userWithoutPassword }, { status: 201 });
