@@ -158,7 +158,7 @@ export function QuestionnaireView() {
     try {
       const res = await fetch('/api/assessments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
         body: JSON.stringify({
           sessionId,
           type: 'questionnaire',

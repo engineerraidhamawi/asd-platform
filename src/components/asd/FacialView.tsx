@@ -89,7 +89,7 @@ export function FacialView() {
 
   const submit = async () => {
     const score = 55 + Math.random() * 35;
-    await fetch('/api/assessments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, type: 'facial', rawData: { landmarksCount: landmarks.length, duration: 15 }, score: Math.round(score), maxScore: 100 }) });
+    await fetch('/api/assessments', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' }, body: JSON.stringify({ sessionId, type: 'facial', rawData: { landmarksCount: landmarks.length, duration: 15 }, score: Math.round(score), maxScore: 100 }) });
     navigate('assess-motor');
   };
 

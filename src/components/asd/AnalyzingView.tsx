@@ -63,7 +63,7 @@ export function AnalyzingView() {
 
       fetch('/api/results', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
         body: JSON.stringify({ sessionId, userId: useAppStore.getState().user?.id }),
         signal: controller.signal,
       })

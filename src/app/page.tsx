@@ -183,13 +183,13 @@ function NewAssessmentView() {
     try {
       const res = await fetch("/api/patients", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": localStorage.getItem("userId") || "" },
         body: JSON.stringify({ name, age, gender, notes, createdById: user?.id }),
       });
       const patient = await res.json();
       const sessRes = await fetch("/api/sessions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-user-id": localStorage.getItem("userId") || "" },
         body: JSON.stringify({ patientId: patient.id, userId: user?.id }),
       });
       const session = await sessRes.json();
