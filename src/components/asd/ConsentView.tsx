@@ -18,7 +18,7 @@ export function ConsentView() {
   const handleConsent = async () => {
     if (!allAgreed || !sessionId) return;
     setSubmitting(true);
-    await fetch('/api/sessions', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId, status: 'assessing' }) });
+    await fetch('/api/sessions', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' }, body: JSON.stringify({ sessionId, status: 'assessing' }) });
     navigate('assess-questionnaire');
   };
 

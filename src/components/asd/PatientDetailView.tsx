@@ -82,7 +82,7 @@ export function PatientDetailView() {
     if (!patient || !selectedPatientId) return;
     const sessRes = await fetch('/api/sessions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
       body: JSON.stringify({ patientId: selectedPatientId, userId: user?.id }),
     });
     const session = await sessRes.json();
