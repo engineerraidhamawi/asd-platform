@@ -4,7 +4,7 @@ import { logAction } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
+    const userId = req.headers.get("x-user-id") || req.nextUrl.searchParams.get("userId");
 
     let whereClause: any = {};
 
@@ -75,6 +75,12 @@ export async function DELETE(req: NextRequest) {
     const patient = await db.patient.findUnique({ where: { id } });
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    const callerId = req.headers.get("x-user-id");
+    const callerRole = req.headers.get("x-user-role");
+    if (callerRole !== "admin" && patient.createdById !== callerId) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
     const sessions = await db.session.findMany({ where: { patientId: id } });
