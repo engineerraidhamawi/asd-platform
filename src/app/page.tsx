@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LoginView } from "@/components/asd/LoginView";
-import { SignupView } from "@/components/asd/SignupView";
+
 import { DashboardView } from "@/components/asd/DashboardView";
 import { PatientListView } from "@/components/asd/PatientListView";
 import { PatientDetailView } from "@/components/asd/PatientDetailView";
@@ -71,7 +71,7 @@ export default function PlatformPage() {
   if (isAuthView) {
     switch (currentView) {
       case "login": return <LoginView />;
-      case "signup": return <SignupView />;
+      
       default: return <LoginView />;
     }
   }

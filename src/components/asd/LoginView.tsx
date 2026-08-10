@@ -124,7 +124,7 @@ export function LoginView() {
           </CardContent>
         </Card>
 
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-gray-500 hidden">
           {t("noAccount")}{" "}
           <button onClick={() => navigate("signup")} className="text-blue-600 hover:text-blue-700 font-medium">
             {t("signup")}
