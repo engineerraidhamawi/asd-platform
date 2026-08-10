@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState, useRef } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -38,7 +39,7 @@ export default function PlatformPage() {
     Promise.resolve().then(() => {
       const userId = localStorage.getItem("userId");
       if (userId) {
-        fetch("/api/auth/me", { headers: { "x-user-id": userId } })
+        apiFetch("/api/auth/me", { headers: { "x-user-id": userId } })
           .then(r => r.ok ? r.json() : Promise.reject())
           .then(data => setUser(data.user))
           .catch(() => localStorage.removeItem("userId"));
@@ -181,13 +182,13 @@ function NewAssessmentView() {
     if (!name.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/patients", {
+      const res = await apiFetch("/api/patients", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-user-id": localStorage.getItem("userId") || "" },
         body: JSON.stringify({ name, age, gender, notes, createdById: user?.id }),
       });
       const patient = await res.json();
-      const sessRes = await fetch("/api/sessions", {
+      const sessRes = await apiFetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-user-id": localStorage.getItem("userId") || "" },
         body: JSON.stringify({ patientId: patient.id, userId: user?.id }),

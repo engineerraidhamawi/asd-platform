@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -156,7 +157,7 @@ export function QuestionnaireView() {
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/assessments', {
+      const res = await apiFetch('/api/assessments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
         body: JSON.stringify({

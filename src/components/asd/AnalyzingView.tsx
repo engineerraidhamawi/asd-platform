@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useState, useEffect, useRef } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -61,7 +62,7 @@ export function AnalyzingView() {
         navigate('results');
       }, 5000);
 
-      fetch('/api/results', {
+      apiFetch('/api/results', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
         body: JSON.stringify({ sessionId, userId: useAppStore.getState().user?.id }),

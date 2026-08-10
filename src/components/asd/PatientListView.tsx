@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -51,7 +52,7 @@ export function PatientListView() {
   const [creating, setCreating] = useState(false);
 
   const loadPatients = () => {
-    fetch('/api/patients', { headers: { 'x-user-id': localStorage.getItem('userId') || '' } })
+    apiFetch('/api/patients', { headers: { 'x-user-id': localStorage.getItem('userId') || '' } })
       .then(r => r.json())
       .then(d => { if (Array.isArray(d)) return d; return []; }).then(d => { if (Array.isArray(d)) return d; return []; }).then(setPatients)
       .catch(() => {})
@@ -68,7 +69,7 @@ export function PatientListView() {
     if (!name.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch('/api/patients', {
+      const res = await apiFetch('/api/patients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, age, gender, notes, createdById: user?.id }),
@@ -84,12 +85,12 @@ export function PatientListView() {
 
   const handleDelete = async (id: string, patientName: string) => {
     if (!confirm(lang === 'ar' ? `هل أنت متأكد من حذف المريض "${patientName}"؟` : `Delete patient "${patientName}"?`)) return;
-    await fetch(`/api/patients?id=${id}&userId=${user?.id}`, { method: 'DELETE' });
+    await apiFetch(`/api/patients?id=${id}&userId=${user?.id}`, { method: 'DELETE' });
     loadPatients();
   };
 
   const handleStartAssessment = async (patient: PatientWithSessions) => {
-    const sessRes = await fetch('/api/sessions', {
+    const sessRes = await apiFetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ patientId: patient.id, userId: user?.id }),

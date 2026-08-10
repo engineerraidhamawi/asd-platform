@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -43,7 +44,7 @@ export function AuditLogView() {
     setLoading(true);
     let url = `/api/audit?limit=${limit}&offset=${page * limit}`;
     if (search) url += `&action=${encodeURIComponent(search)}`;
-    fetch(url)
+    apiFetch(url)
       .then(r => r.json())
       .then(data => { setLogs(data.logs || []); setTotal(data.total || 0); })
       .catch(() => {})
@@ -57,7 +58,7 @@ export function AuditLogView() {
       let url = `/api/audit?limit=${limit}&offset=${page * limit}`;
       if (search) url += `&action=${encodeURIComponent(search)}`;
       try {
-        const r = await fetch(url);
+        const r = await apiFetch(url);
         const data = await r.json();
         if (!cancelled) { setLogs(data.logs || []); setTotal(data.total || 0); }
       } catch {}

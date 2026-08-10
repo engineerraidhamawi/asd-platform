@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -50,7 +51,7 @@ export function MyAssessmentsView() {
 
   useEffect(() => {
     if (!user) return;
-    fetch("/api/patients?userId=" + user.id)
+    apiFetch("/api/patients?userId=" + user.id)
       .then(r => r.json())
       .then(data => {
         setPatients(Array.isArray(data) ? data : []);

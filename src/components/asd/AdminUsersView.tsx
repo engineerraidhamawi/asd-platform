@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -40,7 +41,7 @@ export function AdminUsersView() {
   const [saving, setSaving] = useState(false);
 
   const loadUsers = () => {
-    fetch('/api/users').then(r => r.json()).then(setUsers).catch(() => {}).finally(() => setLoading(false));
+    apiFetch('/api/users').then(r => r.json()).then(setUsers).catch(() => {}).finally(() => setLoading(false));
   };
 
   useEffect(() => { loadUsers(); }, []);
@@ -48,7 +49,7 @@ export function AdminUsersView() {
   const handleAdd = async () => {
     if (!form.name || !form.email || !form.password) return;
     setSaving(true);
-    await fetch('/api/auth/register', {
+    await apiFetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, createdById: user?.id }),
@@ -61,13 +62,13 @@ export function AdminUsersView() {
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('confirmDelete'))) return;
-    await fetch(`/api/users?id=${id}&adminId=${user?.id}`, { method: 'DELETE' });
+    await apiFetch(`/api/users?id=${id}&adminId=${user?.id}`, { method: 'DELETE' });
     loadUsers();
   };
 
   const handleEdit = async (id: string) => {
     setSaving(true);
-    await fetch('/api/users', {
+    await apiFetch('/api/users', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, name: form.name, email: form.email, role: form.role, password: form.password || undefined, adminId: user?.id }),

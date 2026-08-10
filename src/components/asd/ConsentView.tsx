@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useAppStore } from '@/store/useAppStore';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -18,7 +19,7 @@ export function ConsentView() {
   const handleConsent = async () => {
     if (!allAgreed || !sessionId) return;
     setSubmitting(true);
-    await fetch('/api/sessions', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' }, body: JSON.stringify({ sessionId, status: 'assessing' }) });
+    await apiFetch('/api/sessions', { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' }, body: JSON.stringify({ sessionId, status: 'assessing' }) });
     navigate('assess-questionnaire');
   };
 

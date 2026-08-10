@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -80,8 +81,8 @@ export function ResultsView() {
   useEffect(() => {
     if (!sessionId) return;
     Promise.all([
-      fetch('/api/results?sessionId=' + sessionId).then(r => r.json()),
-      fetch('/api/assessments?sessionId=' + sessionId).then(r => r.json()),
+      apiFetch('/api/results?sessionId=' + sessionId).then(r => r.json()),
+      apiFetch('/api/assessments?sessionId=' + sessionId).then(r => r.json()),
     ]).then(([resultData, assessData]) => {
       let parsed = resultData;
       if (typeof resultData.radarScores === 'string') {

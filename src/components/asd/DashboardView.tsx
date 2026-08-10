@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/store/useAppStore";
@@ -37,8 +38,8 @@ export function DashboardView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/seed", { method: "POST" }).then(() =>
-      fetch("/api/stats")
+    apiFetch("/api/seed", { method: "POST" }).then(() =>
+      apiFetch("/api/stats")
         .then(r => r.json())
         .then(data => {
           setStats(data)

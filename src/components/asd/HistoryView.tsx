@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useAppStore } from '@/store/useAppStore';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -31,7 +32,7 @@ export function HistoryView() {
 
   useEffect(() => {
     if (!patientId) return;
-    fetch('/api/results?patientId=' + patientId).then(r => r.json()).then(setResults).catch(() => {}).finally(() => setLoading(false));
+    apiFetch('/api/results?patientId=' + patientId).then(r => r.json()).then(setResults).catch(() => {}).finally(() => setLoading(false));
   }, [patientId]);
 
   const drawMiniRadar = useCallback((canvas: HTMLCanvasElement, scoresStr: string) => {

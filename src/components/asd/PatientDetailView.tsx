@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -60,7 +61,7 @@ export function PatientDetailView() {
 
   useEffect(() => {
     if (!selectedPatientId) return;
-    fetch('/api/patients/' + selectedPatientId)
+    apiFetch('/api/patients/' + selectedPatientId)
       .then(r => r.ok ? r.json() : Promise.reject())
       .then((p: PatientData) => {
         setPatient(p);
@@ -80,7 +81,7 @@ export function PatientDetailView() {
 
   const handleStartAssessment = async () => {
     if (!patient || !selectedPatientId) return;
-    const sessRes = await fetch('/api/sessions', {
+    const sessRes = await apiFetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-user-id': localStorage.getItem('userId') || '' },
       body: JSON.stringify({ patientId: selectedPatientId, userId: user?.id }),

@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -23,7 +24,7 @@ export function AdminQuestionsView() {
   const [dragOver, setDragOver] = useState(false);
 
   const loadCounts = () => {
-    fetch('/api/questions')
+    apiFetch('/api/questions')
       .then(r => r.json())
       .then((grouped: Record<string, { ar: string; en: string }[]>) => {
         setCurrentCounts({
@@ -50,7 +51,7 @@ export function AdminQuestionsView() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/admin/questions/upload', {
+      const res = await apiFetch('/api/admin/questions/upload', {
         method: 'POST',
         body: formData,
       });

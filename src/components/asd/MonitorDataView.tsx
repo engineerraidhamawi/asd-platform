@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from "@/lib/api";
 
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -35,7 +36,7 @@ export function MonitorDataView() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/stats').then(r => r.json()).then(setStats).catch(() => {}).finally(() => setLoading(false));
+    apiFetch('/api/stats').then(r => r.json()).then(setStats).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-gray-200 border-t-emerald-500 rounded-full animate-spin" /></div>;
