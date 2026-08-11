@@ -275,6 +275,39 @@ export function DashboardView() {
         </Card>
       )}
 
+      {/* Recent High-Risk Results (Feature #8) */}
+      {!isAdmin && stats?.recentResults?.filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical').length > 0 && (
+        <Card className="rounded-2xl border-0 shadow-lg shadow-red-100/40 bg-gradient-to-r from-rose-50 to-fuchsia-50">
+          <CardContent className="p-6">
+            <h2 className="text-sm font-bold text-rose-700 mb-4 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              {lang === 'ar' ? 'نتائج عالية الخطورة الأخيرة' : 'Recent High-Risk Results'}
+            </h2>
+            <div className="space-y-2">
+              {stats.recentResults
+                .filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical')
+                .slice(0, 5)
+                .map((r: any, i: number) => (
+                  <div key={i} className="flex items-center gap-3 bg-white/70 rounded-xl px-4 py-3">
+                    <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.riskLevel === 'critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{r.session?.patient?.name || '—'}</p>
+                      <p className="text-[11px] text-slate-500">
+                        {r.subtype ? `${SUBTYPE_CONFIG[r.subtype]?.[lang] || r.subtype} · ` : ''}
+                        {new Date(r.createdAt).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`text-lg font-bold tabular-nums ${r.riskLevel === 'critical' ? 'text-red-600' : 'text-orange-600'}`}>{r.riskScore || 0}</span>
+                      <p className="text-[10px] text-slate-400">{RISK_CONFIG[r.riskLevel]?.[lang] || r.riskLevel}</p>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Incomplete Assessments (Feature #4) */}
       {!isAdmin && stats?.incompleteSessions && stats.incompleteSessions.length > 0 && (
         <Card className="rounded-2xl border-0 shadow-lg shadow-amber-100/50 bg-gradient-to-r from-amber-50 to-yellow-50">
