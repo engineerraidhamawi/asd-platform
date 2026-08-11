@@ -170,10 +170,45 @@ export async function GET(request: Request) {
       });
     }
 
+    // --- Feature #5: Doctor Performance (monitor only) ---
+    let doctorPerformance: any[] = [];
+    if (isMonitor) {
+      const doctors = await db.user.findMany({
+        where: { role: 'doctor' },
+        select: { id: true, name: true },
+      });
+      for (const doc of doctors) {
+        const pCount = await db.patient.count({ where: { createdById: doc.id } });
+        if (pCount === 0) continue;
+        const sTotal = await db.session.count({
+          where: { patient: { createdById: doc.id } },
+        });
+        const sCompleted = await db.session.count({
+          where: { patient: { createdById: doc.id }, status: 'completed' },
+        });
+        const docResults = await db.result.findMany({
+          where: { session: { patient: { createdById: doc.id } } },
+          select: { riskScore: true },
+        });
+        const avgRisk = docResults.length > 0
+          ? Math.round(docResults.reduce((sum, r) => sum + (r.riskScore || 0), 0) / docResults.length)
+          : 0;
+        doctorPerformance.push({
+          doctorId: doc.id,
+          doctorName: doc.name,
+          patientCount: pCount,
+          totalSessions: sTotal,
+          completedSessions: sCompleted,
+          avgRiskScore: avgRisk,
+        });
+      }
+    }
+
     return NextResponse.json({
       userCount, patientCount, sessionCount, completedSessions,
       riskDist, subtypeDist, assessByType, recentResults, recentLogs,
       riskAlerts, assessmentTrend, ageDistribution, incompleteSessions,
+      doctorPerformance,
     });
   } catch (error) {
     console.error('Stats error:', error);

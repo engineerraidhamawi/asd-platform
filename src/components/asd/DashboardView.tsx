@@ -32,6 +32,11 @@ interface Stats {
   assessmentTrend: { week: string; count: number }[];
   ageDistribution: { range: string; count: number }[];
   incompleteSessions: { id: string; status: string; createdAt: string; patient: { id: string; name: string } }[];
+  doctorPerformance: {
+    doctorId: string; doctorName: string;
+    patientCount: number; totalSessions: number;
+    completedSessions: number; avgRiskScore: number;
+  }[];
 }
 
 const RISK_CONFIG: Record<string, { color: string; bg: string; ar: string; en: string }> = {
@@ -190,6 +195,44 @@ export function DashboardView() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Doctor Performance Comparison (Feature #5 - Monitor only) */}
+      {isMonitor && stats?.doctorPerformance && stats.doctorPerformance.length > 0 && (
+        <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
+          <CardContent className="p-6">
+            <h2 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-purple-600" />
+              </div>
+              {lang === 'ar' ? 'أداء الأطباء' : 'Doctor Performance'}
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-2 px-2 text-xs font-semibold text-slate-500">{lang === 'ar' ? 'الطبيب' : 'Doctor'}</th>
+                    <th className="text-center py-2 px-2 text-xs font-semibold text-slate-500">{lang === 'ar' ? 'المرضى' : 'Patients'}</th>
+                    <th className="text-center py-2 px-2 text-xs font-semibold text-slate-500">{lang === 'ar' ? 'مكتمل' : 'Completed'}</th>
+                    <th className="text-center py-2 px-2 text-xs font-semibold text-slate-500">{lang === 'ar' ? 'متوسط الخطورة' : 'Avg Risk'}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.doctorPerformance.map((d) => (
+                    <tr key={d.doctorId} className="border-b border-slate-50 hover:bg-slate-50/50">
+                      <td className="py-3 px-2 font-medium text-slate-800">{d.doctorName}</td>
+                      <td className="py-3 px-2 text-center tabular-nums text-slate-600">{d.patientCount}</td>
+                      <td className="py-3 px-2 text-center tabular-nums text-slate-600">{d.completedSessions}/{d.totalSessions}</td>
+                      <td className="py-3 px-2 text-center">
+                        <span className={`font-bold tabular-nums ${d.avgRiskScore >= 70 ? 'text-red-600' : d.avgRiskScore >= 40 ? 'text-amber-600' : 'text-emerald-600'}`}>{d.avgRiskScore}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </CardContent>
         </Card>
       )}
