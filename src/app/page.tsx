@@ -67,7 +67,7 @@ export default function PlatformPage() {
     navigate("login");
   };
 
-  const isAuthView = ["login", "signup"].includes(currentView);
+  const isAuthView = ["login"].includes(currentView);
   if (isAuthView) {
     switch (currentView) {
       case "login": return <LoginView />;

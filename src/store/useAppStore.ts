@@ -69,7 +69,7 @@ export const useAppStore = create<AppState>((set) => ({
   setUser: (user) => set({
     user,
     currentView: user
-      ? (user.role === "patient" ? "my-assessments" : user.role === "admin" ? "admin-users" : "dashboard")
+      ? (user.role === "patient" ? "my-assessments" : "dashboard")
       : "login",
   }),
   startSession: (sessionId, patientId, name, age, gender) =>
