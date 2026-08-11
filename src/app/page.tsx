@@ -21,6 +21,7 @@ import { HistoryView } from "@/components/asd/HistoryView";
 import { FacialView } from "@/components/asd/FacialView";
 import { Sidebar, MobileNav } from "@/components/asd/Sidebar";
 import { Brain, Globe, LogOut, Shield, Menu, X, User as UserIcon } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
