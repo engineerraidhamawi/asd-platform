@@ -109,6 +109,7 @@ export function DashboardView() {
   const maxTrend = Math.max(...trendData.map(d => d.count), 1);
   const ageData = stats?.ageDistribution || [];
   const maxAge = Math.max(...ageData.map(d => d.count), 1);
+  const highRiskResults = (stats?.recentResults || []).filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical');
 
   return (
     <div className="space-y-6" dir={dir}>
@@ -276,7 +277,7 @@ export function DashboardView() {
       )}
 
       {/* Recent High-Risk Results (Feature #8) */}
-      {!isAdmin && stats?.recentResults?.filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical').length > 0 && (
+      {!isAdmin && highRiskResults.length > 0 && (
         <Card className="rounded-2xl border-0 shadow-lg shadow-red-100/40 bg-gradient-to-r from-rose-50 to-fuchsia-50">
           <CardContent className="p-6">
             <h2 className="text-sm font-bold text-rose-700 mb-4 flex items-center gap-2">
@@ -284,10 +285,7 @@ export function DashboardView() {
               {lang === 'ar' ? 'نتائج عالية الخطورة الأخيرة' : 'Recent High-Risk Results'}
             </h2>
             <div className="space-y-2">
-              {stats.recentResults
-                .filter((r: any) => r.riskLevel === 'high' || r.riskLevel === 'critical')
-                .slice(0, 5)
-                .map((r: any, i: number) => (
+              {highRiskResults.slice(0, 5).map((r: any, i: number) => (
                   <div key={i} className="flex items-center gap-3 bg-white/70 rounded-xl px-4 py-3">
                     <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${r.riskLevel === 'critical' ? 'bg-red-500' : 'bg-orange-500'}`} />
                     <div className="flex-1 min-w-0">
