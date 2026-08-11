@@ -56,6 +56,13 @@ const AGE_LABELS: Record<string, { ar: string; en: string }> = {
 
 const AGE_COLORS = ['bg-emerald-400', 'bg-sky-400', 'bg-violet-400', 'bg-amber-400', 'bg-rose-400'];
 
+const SUBTYPE_CONFIG: Record<string, { ar: string; en: string; color: string }> = {
+  withdrawn:  { ar: 'المنعزل',   en: 'Withdrawn',   color: '#8b5cf6' },
+  activeOdd:  { ar: 'النشط-الغريب', en: 'Active-odd', color: '#f59e0b' },
+  shy:        { ar: 'الخجول',   en: 'Shy',         color: '#3b82f6' },
+  motorSub:   { ar: 'الحركي',   en: 'Motor',       color: '#10b981' },
+};
+
 export function DashboardView() {
   const { user, navigate, startSession } = useAppStore();
   const { lang, t, dir } = useLanguage();
@@ -347,6 +354,54 @@ export function DashboardView() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Subtype Distribution Pie (Feature #6) */}
+      {!isAdmin && stats?.subtypeDist && Object.keys(stats.subtypeDist).length > 0 && (
+        <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
+          <CardContent className="p-6">
+            <h2 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-fuchsia-50 flex items-center justify-center">
+                <Brain className="w-4 h-4 text-fuchsia-600" />
+              </div>
+              {lang === 'ar' ? 'توزيع الأنماط الفرعية' : 'Subtype Distribution'}
+            </h2>
+            <div className="flex items-center gap-8">
+              <div
+                className="w-32 h-32 rounded-full flex-shrink-0"
+                style={{
+                  background: (() => {
+                    const entries = Object.entries(stats.subtypeDist);
+                    const total = entries.reduce((s, [, v]) => s + v, 0) || 1;
+                    let deg = 0;
+                    const stops: string[] = [];
+                    for (const [key, val] of entries) {
+                      const pct = (val / total) * 360;
+                      const c = SUBTYPE_CONFIG[key]?.color || '#94a3b8';
+                      stops.push(`${c} ${deg}deg ${deg + pct}deg`);
+                      deg += pct;
+                    }
+                    return `conic-gradient(${stops.join(', ')})`;
+                  })(),
+                }}
+              />
+              <div className="space-y-2 flex-1">
+                {Object.entries(stats.subtypeDist).map(([key, count]) => {
+                  const total = Object.values(stats.subtypeDist).reduce((a: number, b: number) => a + b, 0) || 1;
+                  const pct = Math.round((count / total) * 100);
+                  const cfg = SUBTYPE_CONFIG[key];
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cfg?.color || '#94a3b8' }} />
+                      <span className="text-xs text-slate-600 flex-1">{cfg?.[lang] || key}</span>
+                      <span className="text-xs font-semibold text-slate-800 tabular-nums">{count} ({pct}%)</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick actions for doctor */}
       {isDoctor && (
