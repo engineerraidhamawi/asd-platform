@@ -12,7 +12,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", icon: LayoutDashboard, labelKey: "dashboard", roles: ["admin", "doctor", "monitor"] },
+  { key: "dashboard", icon: LayoutDashboard, labelKey: "dashboard", roles: ["doctor", "monitor"] },
   { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
   { key: "my-assessments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
   { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: ["admin"] },
