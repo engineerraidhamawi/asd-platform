@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
   UserPlus, BarChart3, ArrowUpRight, TrendingUp,
-  AlertTriangle, Calendar, UserCog, Clock
+  AlertTriangle, Calendar, UserCog, Clock, Printer
 } from 'lucide-react';
 
 interface Stats {
@@ -121,17 +121,23 @@ export function DashboardView() {
           </h1>
           <p className="text-sm text-slate-500 mt-1">{t('platformSubtitle')}</p>
         </div>
-        {isDoctor && (
-          <Button onClick={() => navigate('new-assessment')} className="gap-2 h-10 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 shadow-md shadow-sky-500/20 rounded-xl text-sm">
-            <UserPlus className="w-4 h-4" />
-            {t('startNew')}
+        <div className="flex items-center gap-2">
+          {isDoctor && (
+            <Button onClick={() => navigate('new-assessment')} className="gap-2 h-10 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 shadow-md shadow-sky-500/20 rounded-xl text-sm">
+              <UserPlus className="w-4 h-4" />
+              {t('startNew')}
+            </Button>
+          )}
+          <Button onClick={() => window.print()} variant="outline" className="gap-2 h-10 rounded-xl text-sm border-slate-200 text-slate-600 hover:bg-slate-50 print:hidden">
+            <Printer className="w-4 h-4" />
+            {lang === 'ar' ? 'تصدير PDF' : 'Export PDF'}
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Date Range Filter (Feature #7) */}
       {!isAdmin && (
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap print:hidden">
           <span className="text-xs text-slate-500 font-medium">{lang === 'ar' ? 'الفترة:' : 'Range:'}</span>
           {['all', '7d', '30d', '90d'].map((r) => (
             <button
