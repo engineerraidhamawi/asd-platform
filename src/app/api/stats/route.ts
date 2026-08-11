@@ -6,6 +6,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const userRole = searchParams.get('userRole') || 'doctor';
+    const fromDateStr = searchParams.get('fromDate');
+    const fromDate = fromDateStr ? new Date(fromDateStr) : null;
 
     const isAdmin = userRole === 'admin';
     const isDoctor = userRole === 'doctor';
@@ -24,18 +26,21 @@ export async function GET(request: Request) {
     const patientCount = await db.patient.count({ where: patientWhere });
 
     // Session query
-    const sessionWhere = isDoctor
+    const sessionBase = isDoctor
       ? { patient: { createdById: userId || undefined } }
       : {};
+    const dateFilter = fromDate ? { createdAt: { gte: fromDate } } : {};
+    const sessionWhere = { ...sessionBase, ...dateFilter };
     const sessionCount = await db.session.count({ where: sessionWhere });
     const completedSessions = await db.session.count({
       where: { ...sessionWhere, status: 'completed' },
     });
 
     // Results
-    const resultsWhere = isDoctor
+    const resultsBase = isDoctor
       ? { session: { patient: { createdById: userId || undefined } } }
       : {};
+    const resultsWhere = { ...resultsBase, ...dateFilter };
     const allResults = await db.result.findMany({
       where: resultsWhere,
       include: { session: { include: { patient: true } } },
@@ -61,9 +66,10 @@ export async function GET(request: Request) {
 
     // Assessments by type
     const assessByType: Record<string, number> = {};
-    const assessWhere = isDoctor
+    const assessBase = isDoctor
       ? { session: { patient: { createdById: userId || undefined } } }
       : {};
+    const assessWhere = { ...assessBase, ...dateFilter };
     const allAssessments = await db.assessment.findMany({
       where: { ...assessWhere, completed: true },
     });

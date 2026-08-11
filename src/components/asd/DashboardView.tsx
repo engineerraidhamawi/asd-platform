@@ -68,16 +68,30 @@ export function DashboardView() {
   const { lang, t, dir } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState('all');
 
-  useEffect(() => {
+  const loadStats = (fromDate?: string) => {
+    setLoading(true);
+    const params = fromDate ? `?fromDate=${fromDate}` : '';
     fetch('/api/seed', { method: 'POST' }).then(() =>
-      fetch('/api/stats')
+      fetch(`/api/stats${params}`)
         .then(r => r.json())
         .then(setStats)
         .catch(() => {})
         .finally(() => setLoading(false))
     );
-  }, []);
+  };
+
+  useEffect(() => { loadStats(); }, []);
+
+  const handleRange = (r: string) => {
+    setRange(r);
+    if (r === 'all') { loadStats(); return; }
+    const days = r === '7d' ? 7 : r === '30d' ? 30 : 90;
+    const d = new Date();
+    d.setDate(d.getDate() - days);
+    loadStats(d.toISOString());
+  };
 
   if (loading) {
     return (
@@ -113,6 +127,22 @@ export function DashboardView() {
           </Button>
         )}
       </div>
+
+      {/* Date Range Filter (Feature #7) */}
+      {!isAdmin && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-slate-500 font-medium">{lang === 'ar' ? 'الفترة:' : 'Range:'}</span>
+          {['all', '7d', '30d', '90d'].map((r) => (
+            <button
+              key={r}
+              onClick={() => handleRange(r)}
+              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${range === r ? 'bg-slate-800 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              {r === 'all' ? (lang === 'ar' ? 'الكل' : 'All') : r}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
