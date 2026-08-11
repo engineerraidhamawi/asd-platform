@@ -85,3 +85,8 @@ body {
   .print\:hidden { display: none !important; }
   aside, nav, [class*="sidebar"], [class*="Sidebar"] { display: none !important; }
 }
+
+/* Dark mode dashboard overrides */
+.dark body { background: #0f172a !important; background-image: none !important; }
+.dark .glass-card { background: rgba(30, 41, 59, 0.85) !important; border-color: rgba(51, 65, 85, 0.6) !important; }
+.dark .shadow-slate-200\/40 { box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important; }

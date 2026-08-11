@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
   UserPlus, BarChart3, ArrowUpRight, TrendingUp,
-  AlertTriangle, Calendar, UserCog, Clock, Printer
+  AlertTriangle, Calendar, UserCog, Clock, Printer, Moon, Sun
 } from 'lucide-react';
 
 interface Stats {
@@ -69,6 +69,18 @@ export function DashboardView() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState('all');
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'));
+  }, []);
+
+  const toggleDark = () => {
+    const next = !dark;
+    setDark(next);
+    document.documentElement.classList.toggle('dark', next);
+    localStorage.setItem('darkMode', String(next));
+  };
 
   const loadStats = (fromDate?: string) => {
     setLoading(true);
@@ -116,7 +128,7 @@ export function DashboardView() {
       {/* Welcome Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
             {lang === 'ar' ? `مرحباً، ${user?.name}` : `Welcome, ${user?.name}`}
           </h1>
           <p className="text-sm text-slate-500 mt-1">{t('platformSubtitle')}</p>
@@ -128,10 +140,13 @@ export function DashboardView() {
               {t('startNew')}
             </Button>
           )}
-          <Button onClick={() => window.print()} variant="outline" className="gap-2 h-10 rounded-xl text-sm border-slate-200 text-slate-600 hover:bg-slate-50 print:hidden">
+          <Button onClick={() => window.print()} variant="outline" className="gap-2 h-10 rounded-xl text-sm border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 print:hidden">
             <Printer className="w-4 h-4" />
             {lang === 'ar' ? 'تصدير PDF' : 'Export PDF'}
           </Button>
+          <button onClick={toggleDark} className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors print:hidden">
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
         </div>
       </div>
 
@@ -177,8 +192,8 @@ export function DashboardView() {
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-slate-400 transition-colors" />
               </div>
-              <p className="text-3xl font-bold text-slate-800 mt-4 tabular-nums tracking-tight">{card.value}</p>
-              <p className="text-xs text-slate-500 mt-1 font-medium">{card.label}</p>
+              <p className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-4 tabular-nums tracking-tight">{card.value}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">{card.label}</p>
             </CardContent>
           </Card>
         ))}
@@ -342,9 +357,9 @@ export function DashboardView() {
         {/* Risk Distribution */}
         <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
           <CardContent className="p-6">
-            <h2 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-sky-600" />
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               </div>
               {t('riskDistribution')}
             </h2>
