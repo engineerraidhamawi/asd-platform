@@ -159,10 +159,21 @@ export async function GET(request: Request) {
       ageDistribution = Object.entries(buckets).map(([range, count]) => ({ range, count }));
     }
 
+    // --- Feature #4: Incomplete Sessions ---
+    let incompleteSessions: any[] = [];
+    if (!isAdmin) {
+      incompleteSessions = await db.session.findMany({
+        where: { ...sessionWhere, status: { not: 'completed' } },
+        include: { patient: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+    }
+
     return NextResponse.json({
       userCount, patientCount, sessionCount, completedSessions,
       riskDist, subtypeDist, assessByType, recentResults, recentLogs,
-      riskAlerts, assessmentTrend, ageDistribution,
+      riskAlerts, assessmentTrend, ageDistribution, incompleteSessions,
     });
   } catch (error) {
     console.error('Stats error:', error);

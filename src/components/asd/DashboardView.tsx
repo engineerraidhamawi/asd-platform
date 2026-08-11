@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
   UserPlus, BarChart3, ArrowUpRight, TrendingUp,
-  AlertTriangle, Calendar, UserCog
+  AlertTriangle, Calendar, UserCog, Clock
 } from 'lucide-react';
 
 interface Stats {
@@ -31,6 +31,7 @@ interface Stats {
   }[];
   assessmentTrend: { week: string; count: number }[];
   ageDistribution: { range: string; count: number }[];
+  incompleteSessions: { id: string; status: string; createdAt: string; patient: { id: string; name: string } }[];
 }
 
 const RISK_CONFIG: Record<string, { color: string; bg: string; ar: string; en: string }> = {
@@ -189,6 +190,31 @@ export function DashboardView() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Incomplete Assessments (Feature #4) */}
+      {!isAdmin && stats?.incompleteSessions && stats.incompleteSessions.length > 0 && (
+        <Card className="rounded-2xl border-0 shadow-lg shadow-amber-100/50 bg-gradient-to-r from-amber-50 to-yellow-50">
+          <CardContent className="p-6">
+            <h2 className="text-sm font-bold text-amber-700 mb-4 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              {lang === 'ar' ? 'تقييمات غير مكتملة' : 'Incomplete Assessments'}
+              <Badge className="text-[10px] px-1.5 py-0 bg-amber-500 text-white hover:bg-amber-600">{stats.incompleteSessions.length}</Badge>
+            </h2>
+            <div className="space-y-2">
+              {stats.incompleteSessions.slice(0, 5).map((s) => (
+                <div key={s.id} className="flex items-center gap-3 bg-white/70 rounded-xl px-4 py-3">
+                  <div className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 truncate">{s.patient?.name || '—'}</p>
+                    <p className="text-xs text-slate-500">{new Date(s.createdAt).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700">{s.status}</Badge>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
