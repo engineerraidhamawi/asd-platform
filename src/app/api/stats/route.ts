@@ -71,33 +71,26 @@ export async function GET(request: Request) {
       assessByType[a.type] = (assessByType[a.type] || 0) + 1;
     }
 
-    // --- Feature #1: Risk Alerts (doctor only) ---
+    // --- Feature #1: Risk Alerts ---
     let riskAlerts: any[] = [];
     if (isDoctor || isMonitor) {
       const patientsWithResults = await db.result.findMany({
         where: resultsWhere,
-        include: {
-          session: { include: { patient: true } },
-        },
+        include: { session: { include: { patient: true } } },
         orderBy: { createdAt: 'asc' },
       });
-
-      // Group by patient
       const grouped: Record<string, any[]> = {};
       for (const r of patientsWithResults) {
         const pid = r.session.patientId;
         if (!grouped[pid]) grouped[pid] = [];
         grouped[pid].push(r);
       }
-
       const riskOrder = ['low', 'moderate', 'high', 'critical'];
       for (const [, results] of Object.entries(grouped)) {
         if (results.length < 2) continue;
         const prev = results[results.length - 2];
         const curr = results[results.length - 1];
-        const prevIdx = riskOrder.indexOf(prev.riskLevel);
-        const currIdx = riskOrder.indexOf(curr.riskLevel);
-        if (currIdx > prevIdx) {
+        if (riskOrder.indexOf(curr.riskLevel) > riskOrder.indexOf(prev.riskLevel)) {
           riskAlerts.push({
             patientId: results[0].session.patient.id,
             patientName: results[0].session.patient.name,
@@ -115,62 +108,63 @@ export async function GET(request: Request) {
       const eightWeeksAgo = new Date();
       eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
       eightWeeksAgo.setHours(0, 0, 0, 0);
-
       const recentAssessments = await db.assessment.findMany({
-        where: {
-          ...assessWhere,
-          completed: true,
-          createdAt: { gte: eightWeeksAgo },
-        },
+        where: { ...assessWhere, completed: true, createdAt: { gte: eightWeeksAgo } },
         select: { createdAt: true },
         orderBy: { createdAt: 'asc' },
       });
-
-      // Group by week
       const weekBuckets: Record<string, number> = {};
       for (const a of recentAssessments) {
         const d = new Date(a.createdAt);
-        // Monday as start of week
         const day = d.getDay();
         const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-        const monday = new Date(d.setDate(diff));
+        const monday = new Date(d);
+        monday.setDate(diff);
         const key = monday.toISOString().split('T')[0];
         weekBuckets[key] = (weekBuckets[key] || 0) + 1;
       }
-
-      // Fill missing weeks
       const now = new Date();
-      const currentDay = now.getDay();
-      const currentMondayDiff = currentDay === 0 ? -6 : 1 - currentDay;
-      const currentMonday = new Date(now);
-      currentMonday.setDate(now.getDate() + currentMondayDiff);
-
+      const cd = now.getDay();
+      const cm = new Date(now);
+      cm.setDate(now.getDate() + (cd === 0 ? -6 : 1 - cd));
       for (let i = 7; i >= 0; i--) {
-        const weekStart = new Date(currentMonday);
-        weekStart.setDate(currentMonday.getDate() - i * 7);
-        const key = weekStart.toISOString().split('T')[0];
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6);
-        const label = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+        const ws = new Date(cm);
+        ws.setDate(cm.getDate() - i * 7);
+        const key = ws.toISOString().split('T')[0];
         assessmentTrend.push({
-          week: label,
+          week: (ws.getMonth() + 1) + '/' + ws.getDate(),
           count: weekBuckets[key] || 0,
         });
       }
     }
 
+    // --- Feature #3: Age Distribution ---
+    let ageDistribution: { range: string; count: number }[] = [];
+    if (!isAdmin) {
+      const patients = await db.patient.findMany({
+        where: patientWhere,
+        select: { dateOfBirth: true },
+      });
+      const buckets: Record<string, number> = {
+        '0-2': 0, '3-5': 0, '6-11': 0, '12-17': 0, '18+': 0,
+      };
+      const now = new Date();
+      for (const p of patients) {
+        if (!p.dateOfBirth) continue;
+        const age = Math.floor((now.getTime() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+        if (age <= 2) buckets['0-2']++;
+        else if (age <= 5) buckets['3-5']++;
+        else if (age <= 11) buckets['6-11']++;
+        else if (age <= 17) buckets['12-17']++;
+        else buckets['18+']++;
+      }
+      ageDistribution = Object.entries(buckets).map(([range, count]) => ({ range, count }));
+    }
+
     return NextResponse.json({
-      userCount,
-      patientCount,
-      sessionCount,
-      completedSessions,
-      riskDist,
-      subtypeDist,
-      assessByType,
-      recentResults,
-      recentLogs,
-      riskAlerts,
-      assessmentTrend,
+      userCount, patientCount, sessionCount, completedSessions,
+      riskDist, subtypeDist, assessByType, recentResults, recentLogs,
+      riskAlerts, assessmentTrend, ageDistribution,
     });
   } catch (error) {
     console.error('Stats error:', error);

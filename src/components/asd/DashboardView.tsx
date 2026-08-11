@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
   UserPlus, BarChart3, ArrowUpRight, TrendingUp,
-  AlertTriangle, Calendar
+  AlertTriangle, Calendar, UserCog
 } from 'lucide-react';
 
 interface Stats {
@@ -30,14 +30,25 @@ interface Stats {
     date: string;
   }[];
   assessmentTrend: { week: string; count: number }[];
+  ageDistribution: { range: string; count: number }[];
 }
 
 const RISK_CONFIG: Record<string, { color: string; bg: string; ar: string; en: string }> = {
-  low:      { color: 'text-emerald-600', bg: 'bg-emerald-400', ar: '\u0645\u0646\u062e\u0641\u0636', en: 'Low' },
-  moderate: { color: 'text-amber-600',   bg: 'bg-amber-400',   ar: '\u0645\u062a\u0648\u0633\u0637', en: 'Moderate' },
-  high:     { color: 'text-orange-600',  bg: 'bg-orange-400',  ar: '\u0645\u0631\u062a\u0641\u0639', en: 'High' },
-  critical: { color: 'text-red-600',     bg: 'bg-red-400',     ar: '\u062d\u0627\u062f',    en: 'Critical' },
+  low:      { color: 'text-emerald-600', bg: 'bg-emerald-400', ar: 'منخفض', en: 'Low' },
+  moderate: { color: 'text-amber-600',   bg: 'bg-amber-400',   ar: 'متوسط', en: 'Moderate' },
+  high:     { color: 'text-orange-600',  bg: 'bg-orange-400',  ar: 'مرتفع', en: 'High' },
+  critical: { color: 'text-red-600',     bg: 'bg-red-400',     ar: 'حاد',    en: 'Critical' },
 };
+
+const AGE_LABELS: Record<string, { ar: string; en: string }> = {
+  '0-2':  { ar: '0-2 سنوات', en: '0-2 years' },
+  '3-5':  { ar: '3-5 سنوات', en: '3-5 years' },
+  '6-11': { ar: '6-11 سنة', en: '6-11 years' },
+  '12-17':{ ar: '12-17 سنة', en: '12-17 years' },
+  '18+':  { ar: '18+ سنة', en: '18+ years' },
+};
+
+const AGE_COLORS = ['bg-emerald-400', 'bg-sky-400', 'bg-violet-400', 'bg-amber-400', 'bg-rose-400'];
 
 export function DashboardView() {
   const { user, navigate, startSession } = useAppStore();
@@ -66,9 +77,10 @@ export function DashboardView() {
   const role = user?.role || 'doctor';
   const isDoctor = role === 'doctor';
   const isAdmin = role === 'admin';
-  const isMonitor = role === 'monitor';
   const trendData = stats?.assessmentTrend || [];
   const maxTrend = Math.max(...trendData.map(d => d.count), 1);
+  const ageData = stats?.ageDistribution || [];
+  const maxAge = Math.max(...ageData.map(d => d.count), 1);
 
   return (
     <div className="space-y-6" dir={dir}>
@@ -76,7 +88,7 @@ export function DashboardView() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
-            {lang === 'ar' ? `\u0645\u0631\u062d\u0628\u0627\u064b\u060c ${user?.name}` : `Welcome, ${user?.name}`}
+            {lang === 'ar' ? `مرحباً، ${user?.name}` : `Welcome, ${user?.name}`}
           </h1>
           <p className="text-sm text-slate-500 mt-1">{t('platformSubtitle')}</p>
         </div>
@@ -121,13 +133,13 @@ export function DashboardView() {
         ))}
       </div>
 
-      {/* Risk Alert Panel (Feature #1) - Doctor & Monitor only */}
+      {/* Risk Alert Panel */}
       {!isAdmin && stats?.riskAlerts && stats.riskAlerts.length > 0 && (
         <Card className="rounded-2xl border-0 shadow-lg shadow-red-100/50 bg-gradient-to-r from-red-50 to-orange-50">
           <CardContent className="p-6">
             <h2 className="text-sm font-bold text-red-700 mb-4 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
-              {lang === 'ar' ? '\u062a\u0646\u0628\u064a\u0647\u0627\u062a \u0627\u0631\u062a\u0641\u0627\u0639 \u0627\u0644\u062e\u0637\u0648\u0631\u0629' : 'Risk Escalation Alerts'}
+              {lang === 'ar' ? 'تنبيهات ارتفاع الخطورة' : 'Risk Escalation Alerts'}
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{stats.riskAlerts.length}</Badge>
             </h2>
             <div className="space-y-2">
@@ -136,18 +148,12 @@ export function DashboardView() {
                   <div className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-slate-800 truncate">{alert.patientName}</p>
-                    <p className="text-xs text-slate-500">
-                      {new Date(alert.date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}
-                    </p>
+                    <p className="text-xs text-slate-500">{new Date(alert.date).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}</p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${RISK_CONFIG[alert.previousRisk]?.bg || 'bg-slate-300'} bg-opacity-20 text-slate-600`}>
-                      {RISK_CONFIG[alert.previousRisk]?.[lang] || alert.previousRisk}
-                    </span>
-                    <span className="text-slate-400">\u2192</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${RISK_CONFIG[alert.currentRisk]?.bg || 'bg-slate-300'} text-white`}>
-                      {RISK_CONFIG[alert.currentRisk]?.[lang] || alert.currentRisk}
-                    </span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">{RISK_CONFIG[alert.previousRisk]?.[lang] || alert.previousRisk}</span>
+                    <span className="text-slate-400">→</span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${RISK_CONFIG[alert.currentRisk]?.bg} text-white`}>{RISK_CONFIG[alert.currentRisk]?.[lang] || alert.currentRisk}</span>
                   </div>
                 </div>
               ))}
@@ -156,7 +162,7 @@ export function DashboardView() {
         </Card>
       )}
 
-      {/* Assessment Trend Chart (Feature #2) - Doctor & Monitor only */}
+      {/* Assessment Trend Chart */}
       {!isAdmin && (
         <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
           <CardContent className="p-6">
@@ -164,10 +170,10 @@ export function DashboardView() {
               <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-indigo-600" />
               </div>
-              {lang === 'ar' ? '\u0627\u062a\u062c\u0627\u0647 \u0627\u0644\u062a\u0642\u064a\u064a\u0645\u0627\u062a (8 \u0623\u0633\u0627\u0628\u064a\u0639)' : 'Assessment Trend (8 Weeks)'}
+              {lang === 'ar' ? 'اتجاه التقييمات (8 أسابيع)' : 'Assessment Trend (8 Weeks)'}
             </h2>
             {trendData.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-8">{lang === 'ar' ? '\u0644\u0627 \u062a\u0648\u062c\u062f \u0628\u064a\u0627\u0646\u0627\u062a \u0628\u0639\u062f' : 'No data yet'}</p>
+              <p className="text-sm text-slate-400 text-center py-8">{lang === 'ar' ? 'لا توجد بيانات بعد' : 'No data yet'}</p>
             ) : (
               <div className="flex items-end gap-2 h-40">
                 {trendData.map((d, i) => (
@@ -187,8 +193,8 @@ export function DashboardView() {
         </Card>
       )}
 
-      {/* Two column: Risk Distribution + Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      {/* Three column: Risk Distribution + Age Distribution + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Risk Distribution */}
         <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
           <CardContent className="p-6">
@@ -217,13 +223,43 @@ export function DashboardView() {
           </CardContent>
         </Card>
 
+        {/* Age Distribution (Feature #3) */}
+        <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
+          <CardContent className="p-6">
+            <h2 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-teal-50 flex items-center justify-center">
+                <UserCog className="w-4 h-4 text-teal-600" />
+              </div>
+              {lang === 'ar' ? 'توزيع الأعمار' : 'Age Distribution'}
+            </h2>
+            {ageData.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-8">{lang === 'ar' ? 'لا توجد بيانات' : 'No data yet'}</p>
+            ) : (
+              <div className="space-y-3">
+                {ageData.map((d, i) => {
+                  const pct = Math.round((d.count / maxAge) * 100);
+                  return (
+                    <div key={d.range} className="flex items-center gap-3">
+                      <span className="text-xs font-semibold text-slate-600 w-16">{AGE_LABELS[d.range]?.[lang] || d.range}</span>
+                      <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${AGE_COLORS[i] || 'bg-slate-400'} transition-all duration-700`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-xs text-slate-400 tabular-nums w-8 text-right font-medium">{d.count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Recent Activity */}
         <Card className="glass-card rounded-2xl border-0 shadow-lg shadow-slate-200/40">
           <CardContent className="p-6">
             <h2 className="text-sm font-bold text-slate-800 mb-5">{t('recentActivity')}</h2>
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {(!stats?.recentLogs || stats.recentLogs.length === 0) ? (
-                <p className="text-sm text-slate-400 text-center py-8">{lang === 'ar' ? '\u0644\u0627 \u064a\u0648\u062c\u062f \u0646\u0634\u0627\u0637 \u0628\u0639\u062f' : 'No activity yet'}</p>
+                <p className="text-sm text-slate-400 text-center py-8">{lang === 'ar' ? 'لا يوجد نشاط بعد' : 'No activity yet'}</p>
               ) : (
                 stats.recentLogs.slice(0, 8).map((log: any) => (
                   <div key={log.id} className="flex items-start gap-3 text-sm">
