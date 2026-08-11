@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
-  UserPlus, BarChart3, ArrowUpRight, TrendingUp
+  UserPlus, BarChart3, ArrowUpRight, TrendingUp, AlertTriangle
 } from "lucide-react";
 
 interface Stats {
@@ -21,7 +21,7 @@ interface Stats {
   subtypeDist: Record<string, number>;
   assessByType: Record<string, number>;
   recentResults: any[];
-  recentLogs: any[];
+  recentLogs: any[];\n  riskAlerts: any[];
 }
 
 const RISK_CONFIG: Record<string, { color: string; bg: string; ar: string; en: string }> = {
@@ -137,8 +137,41 @@ export function DashboardView() {
         <Card>
           <CardContent className="p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
+              <TrendingUp, AlertTriangle className="w-4 h-4 text-emerald-600" />
+                  {(isDoctor || isMonitor) && stats?.riskAlerts && stats.riskAlerts.length > 0 && (
+        <Card className="border-amber-200 bg-amber-50/30">
+          <CardContent className="p-5">
+            <h2 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+              Risk Alerts ({stats.riskAlerts.length})
+            </h2>
+            <div className="space-y-2">
+              {stats.riskAlerts.slice(0, 5).map((alert: any) => (
+                <div key={alert.patientId} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-amber-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-amber-400" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{alert.patientName}</p>
+                      <p className="text-xs text-gray-500">
+                        {alert.previousScore} → {alert.currentScore}
+                        <span className="text-amber-600 font-medium ml-1">(+{alert.change})</span>
+                      </p>
+                    </div>
+                  </div>
+                  <span className={"text-[10px] px-2 py-0.5 rounded-full border font-medium " +
+                    (alert.currentLevel === "critical" ? "bg-red-50 text-red-600 border-red-200" :
+                     alert.currentLevel === "high" ? "bg-orange-50 text-orange-600 border-orange-200" :
+                     "bg-amber-50 text-amber-600 border-amber-200")}>
+                    {t(alert.currentLevel as any)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
               {t("riskDistribution")}
+            
             </h2>
             <div className="space-y-3">
               {Object.entries(RISK_CONFIG).map(([key, cfg]) => {
