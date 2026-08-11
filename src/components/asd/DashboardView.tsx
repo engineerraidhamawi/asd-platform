@@ -104,12 +104,12 @@ export function DashboardView() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {(isAdmin ? [
           { icon: Users, label: t("totalUsers"), value: stats?.userCount || 0, color: "text-blue-600 bg-blue-50" },
-          { icon: Activity, label: t("totalPatients"), value: stats?.patientCount || 0, color: "text-emerald-600 bg-emerald-50" },
-          { icon: ClipboardCheck, label: t("totalAssessments"), value: stats?.sessionCount || 0, color: "text-amber-600 bg-amber-50" },
-          { icon: Shield, label: t("completedAssessments"), value: stats?.completedSessions || 0, color: "text-violet-600 bg-violet-50" },
+          { icon: Shield, label: "System Status", value: 1, color: "text-emerald-600 bg-emerald-50" },
+          { icon: ClipboardCheck, label: "Audit Logs", value: stats?.recentLogs?.length || 0, color: "text-amber-600 bg-amber-50" },
+          { icon: BarChart3, label: "Questions", value: stats?.assessByType?.questionnaire || 0, color: "text-violet-600 bg-violet-50" },
         ] : isDoctor ? [
           { icon: Users, label: t("totalPatients"), value: stats?.patientCount || 0, color: "text-emerald-600 bg-emerald-50" },
-          { icon: ClipboardCheck, label: t("totalAssessments"), value: stats?.sessionCount || 0, color: "text-amber-600 bg-amber-50" },
+          { icon: ClipboardCheck, label: "Audit Logs", value: stats?.recentLogs?.length || 0, color: "text-amber-600 bg-amber-50" },
           { icon: Activity, label: t("completedAssessments"), value: stats?.completedSessions || 0, color: "text-teal-600 bg-teal-50" },
           { icon: Brain, label: t("questionnaires"), value: stats?.assessByType?.questionnaire || 0, color: "text-violet-600 bg-violet-50" },
         ] : [
