@@ -130,6 +130,13 @@ export default function PlatformPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleDarkMode}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Dark mode"
+            >
+              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <Button variant="ghost" size="sm" onClick={toggleLang} className="text-xs gap-1 text-gray-500">
               <Globe className="w-3 h-3" />
               {lang === "ar" ? "EN" : "\u0639\u0631\u0628\u064a"}
