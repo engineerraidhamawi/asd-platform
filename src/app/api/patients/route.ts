@@ -5,6 +5,7 @@ import { logAction } from "@/lib/audit";
 export async function GET(req: NextRequest) {
   try {
     const userId = req.headers.get("x-user-id") || req.nextUrl.searchParams.get("userId");
+    const userRole = req.headers.get("x-user-role");
 
     let whereClause: any = {};
 
@@ -16,7 +17,6 @@ export async function GET(req: NextRequest) {
         } else if (userRecord.role === "doctor") {
           whereClause.createdById = userId;
         }
-        // admin and monitor see all
       }
     }
 
@@ -62,11 +62,52 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, name, age, gender, notes } = body;
+    const callerId = req.headers.get("x-user-id");
+    const callerRole = req.headers.get("x-user-role");
+
+    if (!id) {
+      return NextResponse.json({ error: "Patient ID required" }, { status: 400 });
+    }
+
+    const existing = await db.patient.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    if (callerRole !== "admin" && existing.createdById !== callerId) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (age !== undefined) updateData.age = parseInt(age);
+    if (gender !== undefined) updateData.gender = gender;
+    if (notes !== undefined) updateData.notes = notes;
+
+    const patient = await db.patient.update({
+      where: { id },
+      data: updateData,
+      include: { createdBy: { select: { name: true } } },
+    });
+
+    logAction("PATIENT_UPDATED", id, "Updated patient: " + (name || existing.name), callerId || undefined);
+
+    return NextResponse.json(patient);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update patient" }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const userId = searchParams.get("userId");
+    const callerId = req.headers.get("x-user-id");
+    const callerRole = req.headers.get("x-user-role");
 
     if (!id) {
       return NextResponse.json({ error: "Patient ID required" }, { status: 400 });
@@ -77,8 +118,6 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    const callerId = req.headers.get("x-user-id");
-    const callerRole = req.headers.get("x-user-role");
     if (callerRole !== "admin" && patient.createdById !== callerId) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
@@ -91,7 +130,7 @@ export async function DELETE(req: NextRequest) {
     await db.session.deleteMany({ where: { patientId: id } });
     await db.patient.delete({ where: { id } });
 
-    logAction("PATIENT_DELETED", id, "Deleted patient: " + patient.name, userId || undefined);
+    logAction("PATIENT_DELETED", id, "Deleted patient: " + patient.name, callerId || undefined);
 
     return NextResponse.json({ success: true });
   } catch (error) {

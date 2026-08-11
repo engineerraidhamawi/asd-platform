@@ -2,7 +2,7 @@
 
 import { useAppStore, type ViewType, type UserInfo } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
-import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, BookOpen, ChevronRight, ChevronLeft } from "lucide-react";
+import { Brain, LayoutDashboard, Users, UserPlus, Shield, FileText, BarChart3, ClipboardList, Activity, Database, ChevronRight, ChevronLeft, User as UserIcon } from "lucide-react";
 
 interface NavItem {
   key: ViewType;
@@ -16,7 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "patients", icon: Users, labelKey: "patients", roles: ["doctor"] },
   { key: "my-assessments", icon: ClipboardList, labelKey: "myAssessments", roles: ["patient"] },
   { key: "admin-users", icon: Shield, labelKey: "userManagement", roles: ["admin"] },
-  { key: "admin-questions", icon: BookOpen, labelKey: "questionsManagement", roles: ["admin"] },
+  { key: "admin-questions", icon: Database, labelKey: "questionsManagement", roles: ["admin"] },
   { key: "audit-log", icon: FileText, labelKey: "auditLog", roles: ["admin"] },
   { key: "monitor-data", icon: BarChart3, labelKey: "aggregatedData", roles: ["monitor"] },
 ];
@@ -61,7 +61,19 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           );
         })}
       </nav>
-      <div className="border-t border-gray-100 p-2">
+      <div className="border-t border-gray-100 p-2 space-y-1">
+        <button
+          onClick={() => navigate("profile")}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs transition-colors ${
+            currentView === "profile"
+              ? "bg-emerald-50 text-emerald-700 font-medium"
+              : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+          }`}
+          title={collapsed ? (dir === "rtl" ? "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a" : "Profile") : undefined}
+        >
+          <UserIcon className={`w-4 h-4 flex-shrink-0 ${currentView === "profile" ? "text-emerald-600" : ""}`} />
+          {!collapsed && <span className="truncate">{dir === "rtl" ? "\u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a" : "Profile"}</span>}
+        </button>
         <button
           onClick={onToggle}
           className="w-full flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
@@ -71,7 +83,7 @@ export function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle:
           ) : (
             dir === "rtl" ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />
           )}
-          {!collapsed && <span>{dir === "rtl" ? "Collapse" : "Collapse"}</span>}
+          {!collapsed && <span>{dir === "rtl" ? "\u062a\u0635\u063a\u064a\u0631" : "Collapse"}</span>}
         </button>
       </div>
     </aside>
@@ -109,6 +121,3 @@ export function MobileNav() {
     </div>
   );
 }
-
-
-
