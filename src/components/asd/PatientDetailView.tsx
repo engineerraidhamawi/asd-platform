@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { apiFetch } from '@/lib/api';
 import { useAppStore } from '@/store/useAppStore';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain, BarChart3, CheckCircle2, Clock, XCircle
+  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain, Download
 } from 'lucide-react';
 import { RadarChart } from '@/components/asd/RadarChart';
 
@@ -52,19 +51,6 @@ const RISK_STYLE: Record<string, { bg: string; color: string; ar: string; en: st
   critical: { bg: 'bg-red-50 border-red-200',        color: 'text-red-700',     ar: 'حاد',    en: 'Critical' },
 };
 
-const ASSESS_BADGE: Record<string, string> = {
-  questionnaire: 'bg-emerald-100 text-emerald-700',
-  facial: 'bg-blue-100 text-blue-700',
-  motor: 'bg-violet-100 text-violet-700',
-  cognitive: 'bg-amber-100 text-amber-700',
-};
-
-const STATUS_ICON: Record<string, typeof CheckCircle2> = {
-  completed: CheckCircle2,
-  pending: Clock,
-  analyzing: Activity,
-};
-
 export function PatientDetailView() {
   const { selectedPatientId, navigate, startSession, user } = useAppStore();
   const { lang, t, dir } = useLanguage();
@@ -74,22 +60,21 @@ export function PatientDetailView() {
 
   useEffect(() => {
     if (!selectedPatientId) return;
-    apiFetch('/api/patients')
-      .then(r => r.json())
-      .then((patients: PatientData[]) => {
-        if (!Array.isArray(patients)) return;
-        const p = patients.find(pt => pt.id === selectedPatientId);
-        if (p) {
-          setPatient(p);
-          const completed = p.sessions.filter(s => s.result).sort((a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          if (completed.length > 0) {
-            let result = completed[0].result!;
-            if (typeof result.radarScores === 'string') result = { ...result, radarScores: JSON.parse(result.radarScores) };
-            if (typeof result.xaiReport === 'string') result = { ...result, xaiReport: JSON.parse(result.xaiReport) };
-            setSelectedResult(result);
-          }
+    const userId = localStorage.getItem('userId');
+    const headers: Record<string, string> = userId ? { 'x-user-id': userId } : {};
+    fetch('/api/patients/' + selectedPatientId, { headers })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((p: PatientData) => {
+        setPatient(p);
+        // Auto-select the latest completed result
+        const completed = p.sessions.filter(s => s.result).sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        if (completed.length > 0) {
+          let result = completed[0].result!;
+          if (typeof result.radarScores === 'string') result = { ...result, radarScores: JSON.parse(result.radarScores) };
+          if (typeof result.xaiReport === 'string') result = { ...result, xaiReport: JSON.parse(result.xaiReport) };
+          setSelectedResult(result);
         }
       })
       .catch(() => {})
@@ -98,9 +83,10 @@ export function PatientDetailView() {
 
   const handleStartAssessment = async () => {
     if (!patient || !selectedPatientId) return;
-    const sessRes = await apiFetch('/api/sessions', {
+    const userId = localStorage.getItem('userId');
+    const sessRes = await fetch('/api/sessions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(userId ? { 'x-user-id': userId } : {}) },
       body: JSON.stringify({ patientId: selectedPatientId, userId: user?.id }),
     });
     const session = await sessRes.json();
@@ -148,14 +134,30 @@ export function PatientDetailView() {
                 </div>
               </div>
             </div>
-            <Button onClick={handleStartAssessment} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
-              <Activity className="w-4 h-4" /> {t('startAssessment')}
-            </Button>
-            {patient.sessions.filter(s => s.result).length > 1 && (
-              <Button variant="outline" onClick={() => { useAppStore.getState().setSelectedPatientId(selectedPatientId); navigate('history'); }} className="gap-2">
-                <BarChart3 className="w-4 h-4" /> {t('viewHistory')}
+            <div className="flex items-center gap-2">
+              {selectedResult && (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    const sessionId = patient.sessions.find(s => s.result?.id === selectedResult.id)?.id;
+                    if (!sessionId) return;
+                    const userId = localStorage.getItem('userId');
+                    const res = await fetch('/api/export/pdf?sessionId=' + sessionId, {
+                      headers: userId ? { 'x-user-id': userId } : {},
+                    });
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                  }}
+                  className="gap-2 border-gray-200"
+                >
+                  <Download className="w-4 h-4" /> {t('downloadReport')}
+                </Button>
+              )}
+              <Button onClick={handleStartAssessment} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+                <Activity className="w-4 h-4" /> {t('startAssessment')}
               </Button>
-            )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -195,15 +197,6 @@ export function PatientDetailView() {
                             <Calendar className="w-3 h-3" />
                             {new Date(session.createdAt).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US')}
                           </p>
-                          {session.assessments && session.assessments.length > 0 && (
-                            <div className="flex gap-1 mt-1.5 flex-wrap">
-                              {session.assessments.map((a: any) => (
-                                <span key={a.type} className={"text-[9px] px-1.5 py-0.5 rounded-full font-medium " + (a.completed ? (ASSESS_BADGE[a.type] || 'bg-gray-100 text-gray-600') : 'bg-gray-50 text-gray-400 line-through')}>
-                                  {a.type.slice(0, 6)}
-                                </span>
-                              ))}
-                            </div>
-                          )}
                         </div>
                         {risk && (
                           <Badge variant="outline" className={`${risk.bg} ${risk.color} text-xs`}>
