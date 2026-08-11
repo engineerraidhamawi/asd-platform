@@ -143,19 +143,17 @@ export async function GET(request: Request) {
     if (!isAdmin) {
       const patients = await db.patient.findMany({
         where: patientWhere,
-        select: { dateOfBirth: true },
+        select: { age: true },
       });
       const buckets: Record<string, number> = {
         '0-2': 0, '3-5': 0, '6-11': 0, '12-17': 0, '18+': 0,
       };
-      const now = new Date();
       for (const p of patients) {
-        if (!p.dateOfBirth) continue;
-        const age = Math.floor((now.getTime() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-        if (age <= 2) buckets['0-2']++;
-        else if (age <= 5) buckets['3-5']++;
-        else if (age <= 11) buckets['6-11']++;
-        else if (age <= 17) buckets['12-17']++;
+        const a = p.age;
+        if (a <= 2) buckets['0-2']++;
+        else if (a <= 5) buckets['3-5']++;
+        else if (a <= 11) buckets['6-11']++;
+        else if (a <= 17) buckets['12-17']++;
         else buckets['18+']++;
       }
       ageDistribution = Object.entries(buckets).map(([range, count]) => ({ range, count }));
