@@ -57,6 +57,7 @@ export function LoginView() {
       if (!res.ok) { setError(t("loginError")); setLoading(false); return; }
       const user: UserInfo = data.user;
       localStorage.setItem("userId", user.id);
+      localStorage.setItem("userRole", user.role);
       setUser(user);
     } catch {
       setError(t("loginError"));
