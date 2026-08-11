@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
 import { useAppStore } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   Users, Activity, ClipboardCheck, Shield, Brain,
   UserPlus, BarChart3, ArrowUpRight, TrendingUp,
-  AlertTriangle, Calendar, PieChart, Clock, CheckCircle2
+  AlertTriangle, Calendar, PieChart, Clock, CheckCircle2,
+  ChevronRight, Eye, X, CheckCircle
 } from "lucide-react";
 
 interface Stats {
@@ -53,18 +54,31 @@ const STATUS_CONFIG: Record<string, { icon: typeof Clock; bg: string; color: str
   abandoned: { icon: AlertTriangle, bg: "bg-red-100",    color: "text-red-500",    ar: "\u0645\u062a\u0648\u0642\u0641",      en: "Abandoned" },
 };
 
+const TOAST_COLORS: Record<string, string> = {
+  success: "bg-emerald-600",
+  error: "bg-red-600",
+  info: "bg-blue-600",
+};
+
 export function DashboardView() {
-  const { user, navigate, startSession } = useAppStore();
+  const { user, navigate, setSelectedPatientId } = useAppStore();
   const { lang, t, dir } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Toast state
+  const [toasts, setToasts] = useState<{ id: number; msg: string; type: string }[]>([]);
+  const toastId = useCallback(() => Date.now() + Math.random(), []);
+  const addToast = useCallback((msg: string, type: string) => {
+    const id = toastId();
+    setToasts(prev => [...prev, { id, msg, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+  }, [toastId]);
+
   useEffect(() => {
     apiFetch("/api/stats")
       .then(r => r.json())
-      .then(data => {
-        setStats(data)
-      })
+      .then(data => setStats(data))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -121,8 +135,37 @@ export function DashboardView() {
 
   const statusEntries = Object.entries(stats?.sessionStatus || {}).filter(([, v]) => v > 0);
 
+  // Completion rate donut
+  const completionPct = (stats?.sessionCount || 0) > 0
+    ? Math.round((stats!.completedSessions / stats!.sessionCount) * 100)
+    : 0;
+  const donutColor = completionPct >= 70 ? "bg-emerald-500" : completionPct >= 40 ? "bg-amber-500" : "bg-red-500";
+
+  // High-risk patients
+  const highRiskResults = (stats?.recentResults || []).filter(
+    (r: any) => r.riskLevel === "high" || r.riskLevel === "critical"
+  );
+
+  const handleViewResult = (patientId: string) => {
+    setSelectedPatientId(patientId);
+    navigate("patient-detail");
+  };
+
   return (
     <div className="space-y-6" dir={dir}>
+      {/* Toast Container */}
+      {toasts.length > 0 && (
+        <div className="fixed top-20 right-4 z-[100] space-y-2" style={{ maxWidth: 320 }}>
+          {toasts.map(toast => (
+            <div key={toast.id} className={"flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm shadow-lg " + (TOAST_COLORS[toast.type] || TOAST_COLORS.info) + " animate-[fadeIn_0.2s_ease-out]"}>
+              {toast.type === "success" && <CheckCircle className="w-4 h-4 flex-shrink-0" />}
+              {toast.type === "error" && <X className="w-4 h-4 flex-shrink-0" />}
+              <span className="flex-1">{toast.msg}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
@@ -138,8 +181,8 @@ export function DashboardView() {
         )}
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stat Cards + Completion Donut */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {(isAdmin ? [
           { icon: Users, label: t("totalUsers"), value: stats?.userCount || 0, color: "text-blue-600 bg-blue-50" },
           { icon: Activity, label: t("totalPatients"), value: stats?.patientCount || 0, color: "text-emerald-600 bg-emerald-50" },
@@ -169,7 +212,63 @@ export function DashboardView() {
             </CardContent>
           </Card>
         ))}
+
+        {/* Completion Rate Donut */}
+        <Card className="hover:shadow-md transition-shadow">
+          <CardContent className="p-4 flex flex-col items-center justify-center">
+            <div className="relative w-16 h-16">
+              <div
+                className="w-full h-full rounded-full"
+                style={{
+                  background: `conic-gradient(#10b981 ${completionPct}%, #e5e7eb ${completionPct}% 100%)`,
+                }}
+              />
+              <div className="absolute inset-[6px] rounded-full bg-white flex items-center justify-center">
+                <span className="text-sm font-bold text-gray-900 tabular-nums">{completionPct}%</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-gray-500 mt-2">{lang === "ar" ? "\u0645\u0639\u062f\u0644 \u0627\u0644\u0625\u0643\u0645\u0627\u0644" : "Completion Rate"}</p>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* High-Risk Alert Panel */
+      {highRiskResults.length > 0 && (
+        <Card className="border-red-200 bg-red-50/30">
+          <CardContent className="p-5">
+            <h2 className="text-sm font-bold text-red-700 mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              {lang === "ar" ? "\u0646\u062a\u0627\u0626\u062c \u0645\u0631\u062a\u0641\u0639\u0629 \u0627\u0644\u062e\u0637\u0648\u0631\u0629" : "High-Risk Results"}
+              <span className="text-xs font-normal text-red-500">({highRiskResults.length})</span>
+            </h2>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {highRiskResults.slice(0, 5).map((r: any) => {
+                const cfg = RISK_CONFIG[r.riskLevel] || RISK_CONFIG.high;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => handleViewResult(r.session?.patientId)}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-red-100/50 transition-colors text-left"
+                  >
+                    <div className={"w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 " + cfg.bg}>
+                      <AlertTriangle className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{r.session?.patient?.name || "-"}</p>
+                      <p className="text-[10px] text-gray-500">{new Date(r.createdAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className={"text-xs font-bold " + cfg.color}>{cfg[lang]}</span>
+                      <p className="text-[10px] text-gray-500 tabular-nums">{r.riskScore}%</p>
+                    </div>
+                    <ChevronRight className={"w-4 h-4 text-gray-400 flex-shrink-0 " + (dir === "rtl" ? "rotate-180" : "")} />
+                  </button>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Risk Distribution + Assessment Type Pie */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -198,7 +297,6 @@ export function DashboardView() {
           </CardContent>
         </Card>
 
-        {/* Assessment Type Pie Chart */}
         <Card>
           <CardContent className="p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -211,12 +309,7 @@ export function DashboardView() {
               </div>
             ) : (
               <div className="flex items-center gap-6">
-                <div
-                  className="w-28 h-28 rounded-full flex-shrink-0"
-                  style={{
-                    background: assessConic,
-                  }}
-                />
+                <div className="w-28 h-28 rounded-full flex-shrink-0" style={{ background: assessConic }} />
                 <div className="space-y-2 flex-1">
                   {assessEntries.map(([key, val]) => (
                     <div key={key} className="flex items-center gap-2">
@@ -233,9 +326,8 @@ export function DashboardView() {
         </Card>
       </div>
 
-      {/* Session Status + Gender Distribution + Activity */}
+      {/* Session Status + Gender + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Session Status */}
         <Card>
           <CardContent className="p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -276,7 +368,6 @@ export function DashboardView() {
           </CardContent>
         </Card>
 
-        {/* Gender Distribution */}
         <Card>
           <CardContent className="p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -289,12 +380,7 @@ export function DashboardView() {
               </div>
             ) : (
               <div className="flex items-center gap-6">
-                <div
-                  className="w-24 h-24 rounded-full flex-shrink-0"
-                  style={{
-                    background: `conic-gradient(#3b82f6 0% ${malePct}%, #f472b6 ${malePct}% 100%)`,
-                  }}
-                />
+                <div className="w-24 h-24 rounded-full flex-shrink-0" style={{ background: `conic-gradient(#3b82f6 0% ${malePct}%, #f472b6 ${malePct}% 100%)` }} />
                 <div className="space-y-3 flex-1">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500" />
@@ -317,7 +403,6 @@ export function DashboardView() {
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
         <Card>
           <CardContent className="p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4">{t("recentActivity")}</h2>
@@ -342,7 +427,6 @@ export function DashboardView() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
       {isDoctor && (
         <Card>
           <CardContent className="p-5">
