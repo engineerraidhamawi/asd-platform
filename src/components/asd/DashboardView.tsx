@@ -83,6 +83,7 @@ export function DashboardView() {
   const role = user?.role || 'doctor';
   const isDoctor = role === 'doctor';
   const isAdmin = role === 'admin';
+  const isMonitor = role === 'monitor';
   const trendData = stats?.assessmentTrend || [];
   const maxTrend = Math.max(...trendData.map(d => d.count), 1);
   const ageData = stats?.ageDistribution || [];
