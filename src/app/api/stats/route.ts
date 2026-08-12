@@ -149,23 +149,6 @@ export async function GET(req: NextRequest) {
         ? Math.round(d.sessions.reduce((s: number, sess: any) => s + (sess.results[0]?.riskScore || 0), 0) / d.sessions.length)
         : 0,
     })));
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const trendResults = await db.result.findMany({
-      where: { ...resultWhere, createdAt: { gte: sixMonthsAgo } },
-      select: { riskLevel: true, riskScore: true, createdAt: true },
-      orderBy: { createdAt: 'asc' },
-    });
-    const trendByMonth = {};
-    for (const r of trendResults) {
-      const key = r.createdAt.toISOString().slice(0, 7);
-      if (!trendByMonth[key]) trendByMonth[key] = { high: 0, total: 0, avgScore: 0, count: 0 };
-      trendByMonth[key].total++;
-      trendByMonth[key].avgScore += r.riskScore;
-      if (r.riskLevel === 'high' || r.riskLevel === 'critical') trendByMonth[key].high++;
-    }
-    for (const k of Object.keys(trendByMonth)) { trendByMonth[k].avgScore = Math.round(trendByMonth[k].avgScore / trendByMonth[k].count); }
-    const riskTrend = Object.entries(trendByMonth).map(function(e) { return { month: e[0], ...e[1] }; });
     return NextResponse.json({
       userCount,
       patientCount,
