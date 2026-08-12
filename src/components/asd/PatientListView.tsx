@@ -335,7 +335,7 @@ export function PatientListView() {
                         <div className="min-w-0">
                           <button onClick={() => handleViewPatient(patient.id)} className="text-sm font-semibold text-gray-900 hover:text-emerald-600 transition-colors text-left truncate block">{patient.name}</button>
                           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <span className="text-xs text-gray-500">{t(patient.gender === 'male' ? 'male' : 'female')} \u00b7 {patient.age} {lang === 'ar' ? 'سنوات' : 'years'}</span>
+                            <span className="text-xs text-gray-500">{t(patient.gender === 'male' ? 'male' : 'female')} · {patient.age} {lang === 'ar' ? 'سنوات' : 'years'}</span>
                             {assessTypes.length > 0 && (
                               <span className="flex gap-1">
                                 {assessTypes.map((at: string) => (
@@ -348,7 +348,7 @@ export function PatientListView() {
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {risk && (
-                          <span className={`text-[10px] px-2 py-1 rounded-full border ${risk.bg} font-medium`}>{risk[lang]} \u00b7 {lastResult!.riskScore}%</span>
+                          <span className={`text-[10px] px-2 py-1 rounded-full border ${risk.bg} font-medium`}>{risk[lang]} · {lastResult!.riskScore}%</span>
                         )}
                         <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => handleViewPatient(patient.id)}><Eye className="w-3 h-3" /></Button>
                         <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => handleStartEdit(patient)}><Pencil className="w-3 h-3" /></Button>
