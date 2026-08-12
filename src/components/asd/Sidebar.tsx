@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useAppStore, type ViewType, type UserInfo } from "@/store/useAppStore";
 import { useLanguage } from "@/hooks/useLanguage";

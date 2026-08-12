@@ -81,7 +81,7 @@ export const useAppStore = create<AppState>((set) => ({
     if (next) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark');
     return { darkMode: next };
   }),
-  setUser: (user) => set({ user, currentView: user ? 'dashboard' : 'login' }),
+  setUser: (user) => set({ user, currentView: user ? (user.role === 'admin' ? 'admin-users' : 'dashboard') : 'login' }),
   startSession: (sessionId, patientId, name, age, gender) =>
     set({ sessionId, patientId, patientName: name, patientAge: age, patientGender: gender, currentView: 'consent', questionnaireStep: 0, questionnaireData: {} }),
   setQuestionnaireStep: (step) => set({ questionnaireStep: step }),
