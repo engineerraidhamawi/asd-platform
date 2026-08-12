@@ -162,6 +162,11 @@ export function PatientDetailView() {
         </CardContent>
       </Card>
 
+              {selectedResult && (
+                <Button variant="outline" onClick={() => window.print()} className="gap-2 print:hidden">
+                  <Printer className="w-4 h-4" /> {lang === 'ar' ? 'طباعة' : 'Print'}
+                </Button>
+              )}
       {/* Sessions History + Radar Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sessions List */}
