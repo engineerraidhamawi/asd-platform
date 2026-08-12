@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain, Download
+  ArrowRight, ArrowLeft, User, Calendar, Activity, AlertTriangle, Brain, Download, Printer
 } from 'lucide-react';
 import { RadarChart } from '@/components/asd/RadarChart';
 
