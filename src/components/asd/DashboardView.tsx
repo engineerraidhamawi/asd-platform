@@ -270,6 +270,20 @@ export function DashboardView() {
         </Card>
       )}
 
+            {/* Risk Alerts Trend */}
+      {stats?.riskTrend && stats.riskTrend.length > 1 && (
+        <Card>
+          <CardContent className="p-5">
+            <h2 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-red-500" />
+              {lang === "ar" ? "اتجاه الخطورة" : "Risk Alerts Trend"}
+              <span className="text-[10px] font-normal text-gray-400 ml-auto">{lang === "ar" ? "6 أشهر" : "6 months"}</span>
+            </h2>
+            <div className="h-40"><TrendChart data={stats.riskTrend} lang={lang} /></div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Risk Distribution + Assessment Type Pie */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -447,3 +461,33 @@ export function DashboardView() {
 }
 
 
+
+function TrendChart({ data, lang }: { data: { month: string; high: number; total: number; avgScore: number }[]; lang: string }) {
+  const canvasRef = useCallback((el: HTMLCanvasElement | null) => {
+    if (!el || data.length < 2) return;
+    const ctx = el.getContext('2d'); if (!ctx) return;
+    const W = el.width, H = el.height; ctx.clearRect(0, 0, W, H);
+    const pad = { t: 10, r: 10, b: 24, l: 32 };
+    const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+    const maxT = Math.max(...data.map(d => d.total), 1);
+    const maxH = Math.max(...data.map(d => d.high), 1);
+    ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 0.5;
+    for (let i = 0; i <= 4; i++) { const y = pad.t + (ch/4)*i; ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke(); }
+    ctx.beginPath(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+    data.forEach((d, i) => { const x = pad.l + (cw/(data.length-1))*i; const y = pad.t + ch - (d.total/maxT)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+    data.forEach((d, i) => { const x = pad.l + (cw/(data.length-1))*i; const y = pad.t + ch - (d.high/maxH)*ch; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }); ctx.stroke();
+    data.forEach((d, i) => {
+      const x = pad.l + (cw/(data.length-1))*i;
+      ctx.fillStyle='#3b82f6'; ctx.beginPath(); ctx.arc(x, pad.t+ch-(d.total/maxT)*ch, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ef4444'; ctx.beginPath(); ctx.arc(x, pad.t+ch-(d.high/maxH)*ch, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='#9ca3af'; ctx.font='9px sans-serif'; ctx.textAlign='center'; ctx.fillText(d.month.slice(5), x, H-4);
+    });
+    ctx.font='9px sans-serif'; ctx.fillStyle='#3b82f6'; ctx.fillRect(W-120,2,10,10);
+    ctx.fillStyle='#6b7280'; ctx.textAlign='left';
+    ctx.fillText(lang==='ar'?'إجمالي':'Total', W-106, 10);
+    ctx.fillStyle='#ef4444'; ctx.fillRect(W-60,2,10,10);
+    ctx.fillStyle='#6b7280'; ctx.fillText(lang==='ar'?'عالي خطورة':'High Risk', W-46, 10);
+  }, [data, lang]);
+  return <canvas ref={canvasRef} width={400} height={160} className='w-full h-full' />;
+}

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import {
   Shield, UserPlus, Trash2, Edit3, X, Check, Users as UsersIcon
 } from 'lucide-react';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface UserData {
   id: string;
@@ -39,6 +40,7 @@ export function AdminUsersView() {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'doctor' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [confirmState, setConfirmState] = useState<{open:boolean;action:()=>void;title:string;message:string}>({open:false,action:()=>{},title:'',message:''});
 
   const loadUsers = () => {
     apiFetch('/api/users').then(r => r.json()).then(setUsers).catch(() => {}).finally(() => setLoading(false));
@@ -60,10 +62,16 @@ export function AdminUsersView() {
     setSaving(false);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('confirmDelete'))) return;
-    await apiFetch(`/api/users?id=${id}&adminId=${user?.id}`, { method: 'DELETE' });
-    loadUsers();
+  const handleDelete = (id: string) => {
+    setConfirmState({
+      open: true,
+      title: lang === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
+      message: t('confirmDelete'),
+      action: async () => {
+        await apiFetch('/api/users?id=' + id + '&adminId=' + (user?.id || ''), { method: 'DELETE' });
+        loadUsers();
+      },
+    });
   };
 
   const handleEdit = async (id: string) => {
