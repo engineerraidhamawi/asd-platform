@@ -3,10 +3,12 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const [userCount, patientCount, sessionCount, completedSessions, recentResults] =
+    const [userCount, patientCount, maleCount, femaleCount, sessionCount, completedSessions, recentResults] =
       await Promise.all([
         db.user.count(),
         db.patient.count(),
+        db.patient.count({ where: { gender: 'male' } }),
+        db.patient.count({ where: { gender: 'female' } }),
         db.session.count(),
         db.session.count({ where: { status: "completed" } }),
         db.result.findMany({
@@ -46,6 +48,7 @@ export async function GET() {
       patientCount,
       sessionCount,
       completedSessions,
+      genderDist,
       riskDist,
       subtypeDist,
       assessByType,
