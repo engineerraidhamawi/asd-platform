@@ -1,5 +1,5 @@
-﻿import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -10,20 +10,24 @@ export async function GET() {
         db.patient.count({ where: { gender: 'male' } }),
         db.patient.count({ where: { gender: 'female' } }),
         db.session.count(),
-        db.session.count({ where: { status: "completed" } }),
+        db.session.count({ where: { status: 'completed' } }),
         db.result.findMany({
           include: { session: { include: { patient: true } } },
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: 'desc' },
           take: 10,
         }),
       ]);
 
+    const genderDist: Record<string, number> = { male: maleCount, female: femaleCount };
+
+    // Risk distribution
     const riskDist: Record<string, number> = { low: 0, moderate: 0, high: 0, critical: 0 };
     const allResults = await db.result.findMany();
     for (const r of allResults) {
       if (riskDist[r.riskLevel] !== undefined) riskDist[r.riskLevel]++;
     }
 
+    // Subtype distribution
     const subtypeDist: Record<string, number> = {};
     for (const r of allResults) {
       if (r.subtype) {
@@ -31,12 +35,14 @@ export async function GET() {
       }
     }
 
+    // Recent activity (audit logs)
     const recentLogs = await db.auditLog.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: 'desc' },
       take: 20,
       include: { user: { select: { name: true, role: true } } },
     });
 
+    // Assessments by type
     const assessByType: Record<string, number> = {};
     const allAssessments = await db.assessment.findMany({ where: { completed: true } });
     for (const a of allAssessments) {
@@ -56,7 +62,7 @@ export async function GET() {
       recentLogs,
     });
   } catch (error) {
-    console.error("Stats error:", error);
-    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+    console.error('Stats error:', error);
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 }
