@@ -277,6 +277,9 @@ const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error:
             </Button>
           )}
           {patients.length > 0 && (
+            </Button>
+          )}
+          {patients.length > 0 && (
             <Button variant="outline" onClick={handleExportCSV} className="gap-2">
               <Download className="w-4 h-4" /> CSV
             </Button>
