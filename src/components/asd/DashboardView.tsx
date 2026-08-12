@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api";
@@ -232,7 +232,7 @@ export function DashboardView() {
         </Card>
       </div>
 
-      {/* High-Risk Alert Panel */}
+      {/* High-Risk Alert Panel */
       {highRiskResults.length > 0 && (
         <Card className="border-red-200 bg-red-50/30">
           <CardContent className="p-5">
@@ -445,3 +445,4 @@ export function DashboardView() {
     </div>
   );
 }
+
