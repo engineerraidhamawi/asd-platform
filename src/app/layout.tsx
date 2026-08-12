@@ -1,9 +1,19 @@
 ﻿import type { Metadata } from "next";
-import { Inter, Noto_Sans_Arabic } from "next/font/google";
+import { Cairo } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
-const notoArabic = Noto_Sans_Arabic({ variable: "--font-noto-arabic", subsets: ["arabic"], display: "swap" });
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: "\u0645\u0646\u0635\u0629 \u0627\u0644\u062a\u0646\u0645\u064a\u0637 \u0627\u0644\u0631\u0642\u0645\u064a | Digital Phenotyping Platform",
@@ -14,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
-      <body className={inter.variable + " " + notoArabic.variable + " antialiased bg-white text-gray-900 medical-bg"} style={{ fontFamily: "var(--font-noto-arabic), var(--font-inter), system-ui, sans-serif" }} suppressHydrationWarning>
+      <body className={cairo.variable + " " + inter.variable + " antialiased bg-white text-gray-900 medical-bg"} style={{ fontFamily: "'Cairo', 'Inter', system-ui, sans-serif" }} suppressHydrationWarning>
         {children}
       </body>
     </html>
