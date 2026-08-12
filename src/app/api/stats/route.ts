@@ -95,6 +95,60 @@ export async function GET(req: NextRequest) {
       if (sessionStatus[s.status] !== undefined) sessionStatus[s.status] = s._count;
     }
 
+
+    // Age distribution
+    const ageDist: Record<string, number> = { "0-3": 0, "4-6": 0, "7-9": 0, "10-12": 0, "13+": 0 };
+    for (const p of allPatients) {
+      if (p.age <= 3) ageDist["0-3"]++;
+      else if (p.age <= 6) ageDist["4-6"]++;
+      else if (p.age <= 9) ageDist["7-9"]++;
+      else if (p.age <= 12) ageDist["10-12"]++;
+      else ageDist["13+"]++;
+    }
+
+    // Doctor performance
+    const doctorStats = await db.user.findMany({
+      where: { role: "doctor" },
+      select: {
+        id: true, name: true,
+        _count: { select: { patients: true } },
+        sessions: { where: { status: "completed" }, select: { id: true, results: { select: { riskScore: true } } } },
+      },
+    }).then(docs => docs.map((d: any) => ({
+      id: d.id, name: d.name,
+      patientCount: d._count.patients,
+      completedSessions: d.sessions.length,
+      avgRisk: d.sessions.length > 0
+        ? Math.round(d.sessions.reduce((s: number, sess: any) => s + (sess.results[0]?.riskScore || 0), 0) / d.sessions.length)
+        : 0,
+    })));
+
+    // Age distribution
+    const ageDist: Record<string, number> = { "0-3": 0, "4-6": 0, "7-9": 0, "10-12": 0, "13+": 0 };
+    for (const p of allPatients) {
+      if (p.age <= 3) ageDist["0-3"]++;
+      else if (p.age <= 6) ageDist["4-6"]++;
+      else if (p.age <= 9) ageDist["7-9"]++;
+      else if (p.age <= 12) ageDist["10-12"]++;
+      else ageDist["13+"]++;
+    }
+
+    // Doctor performance
+    const doctorStats = await db.user.findMany({
+      where: { role: "doctor" },
+      select: {
+        id: true, name: true,
+        _count: { select: { patients: true } },
+        sessions: { where: { status: "completed" }, select: { id: true, results: { select: { riskScore: true } } } },
+      },
+    }).then(docs => docs.map((d: any) => ({
+      id: d.id, name: d.name,
+      patientCount: d._count.patients,
+      completedSessions: d.sessions.length,
+      avgRisk: d.sessions.length > 0
+        ? Math.round(d.sessions.reduce((s: number, sess: any) => s + (sess.results[0]?.riskScore || 0), 0) / d.sessions.length)
+        : 0,
+    })));
     return NextResponse.json({
       userCount,
       patientCount,
@@ -110,6 +164,60 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Stats error:", error);
+
+    // Age distribution
+    const ageDist: Record<string, number> = { "0-3": 0, "4-6": 0, "7-9": 0, "10-12": 0, "13+": 0 };
+    for (const p of allPatients) {
+      if (p.age <= 3) ageDist["0-3"]++;
+      else if (p.age <= 6) ageDist["4-6"]++;
+      else if (p.age <= 9) ageDist["7-9"]++;
+      else if (p.age <= 12) ageDist["10-12"]++;
+      else ageDist["13+"]++;
+    }
+
+    // Doctor performance
+    const doctorStats = await db.user.findMany({
+      where: { role: "doctor" },
+      select: {
+        id: true, name: true,
+        _count: { select: { patients: true } },
+        sessions: { where: { status: "completed" }, select: { id: true, results: { select: { riskScore: true } } } },
+      },
+    }).then(docs => docs.map((d: any) => ({
+      id: d.id, name: d.name,
+      patientCount: d._count.patients,
+      completedSessions: d.sessions.length,
+      avgRisk: d.sessions.length > 0
+        ? Math.round(d.sessions.reduce((s: number, sess: any) => s + (sess.results[0]?.riskScore || 0), 0) / d.sessions.length)
+        : 0,
+    })));
+
+    // Age distribution
+    const ageDist: Record<string, number> = { "0-3": 0, "4-6": 0, "7-9": 0, "10-12": 0, "13+": 0 };
+    for (const p of allPatients) {
+      if (p.age <= 3) ageDist["0-3"]++;
+      else if (p.age <= 6) ageDist["4-6"]++;
+      else if (p.age <= 9) ageDist["7-9"]++;
+      else if (p.age <= 12) ageDist["10-12"]++;
+      else ageDist["13+"]++;
+    }
+
+    // Doctor performance
+    const doctorStats = await db.user.findMany({
+      where: { role: "doctor" },
+      select: {
+        id: true, name: true,
+        _count: { select: { patients: true } },
+        sessions: { where: { status: "completed" }, select: { id: true, results: { select: { riskScore: true } } } },
+      },
+    }).then(docs => docs.map((d: any) => ({
+      id: d.id, name: d.name,
+      patientCount: d._count.patients,
+      completedSessions: d.sessions.length,
+      avgRisk: d.sessions.length > 0
+        ? Math.round(d.sessions.reduce((s: number, sess: any) => s + (sess.results[0]?.riskScore || 0), 0) / d.sessions.length)
+        : 0,
+    })));
     return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
   }
 }

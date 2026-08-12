@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "@/lib/api";
@@ -37,7 +37,7 @@ export default function PlatformPage() {
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
-    // Removed auto-seed â€” questions are managed via Excel upload by admin
+    // Removed auto-seed — questions are managed via Excel upload by admin
     Promise.resolve().then(() => {
       const userId = localStorage.getItem("userId");
       if (userId) {
