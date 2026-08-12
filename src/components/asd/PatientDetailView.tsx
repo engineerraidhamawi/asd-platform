@@ -129,7 +129,7 @@ export function PatientDetailView() {
                 <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
                   <span>{t(patient.gender === 'male' ? 'male' : 'female')}</span>
                   <span>·</span>
-                  <span>{patient.age} {t('ageYears')}</span>
+                  <span>{patient.age} {lang === 'ar' ? 'سنوات' : 'years'}</span>
                   {patient.notes && <><span>·</span><span>{patient.notes}</span></>}
                 </div>
               </div>

@@ -131,7 +131,7 @@ export function MyAssessmentsView() {
                       <div>
                         <h3 className="font-semibold text-gray-900">{patient.name}</h3>
                         <p className="text-xs text-gray-400">
-                          {patient.age} {t("ageYears")}
+                          {patient.age} {lang === 'ar' ? 'سنوات' : 'years'}
                           {" / "}
                           {t(patient.gender === "male" ? "male" : "female" as any)}
                         </p>
