@@ -1,10 +1,7 @@
-import { FileSpreadsheet } from 'lucide-react';
-import { ConfirmDialog } from './ConfirmDialog';
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { apiFetch } from '@/lib/api';
-import * as XLSX from 'xlsx';
 import { useAppStore } from '@/store/useAppStore';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
@@ -13,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Users, UserPlus, Search, Trash2, Eye, Activity, X,
-  Pencil, Check, Download, XCircle, ArrowUpDown, CheckCircle, X as XIcon, Calendar
+  Pencil, Check, Download, XCircle, ArrowUpDown, CheckCircle, X as XIcon
 } from 'lucide-react';
 
 interface SessionResult {
@@ -75,9 +72,6 @@ export function PatientListView() {
   // Sort
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortAsc, setSortAsc] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [confirmState, setConfirmState] = useState<{open:boolean;action:()=>void;title:string;message:string}>({open:false,action:()=>{},title:'',message:''});
 
   // Toast
   const [toasts, setToasts] = useState<{ id: number; msg: string; type: string }[]>([]);
@@ -134,12 +128,9 @@ export function PatientListView() {
     risk: { ar: '\u0627\u0644\u062e\u0637\u0648\u0631\u0629', en: 'Risk' },
   };
 
-  const filtered = patients.filter(p => {
-    if (!p.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (dateFrom && new Date(p.createdAt) < new Date(dateFrom)) return false;
-    if (dateTo) { const d = new Date(dateTo); d.setDate(d.getDate() + 1); if (new Date(p.createdAt) >= d) return false; }
-    return true;
-  });
+  const filtered = patients.filter(p =>
+    p.name.toLowerCase().includes(search.toLowerCase())
+  );
   const sorted = getSorted();
 
   const handleCreate = async () => {
@@ -158,17 +149,11 @@ export function PatientListView() {
     setCreating(false);
   };
 
-  const handleDelete = (id: string, patientName: string) => {
-    setConfirmState({
-      open: true,
-      title: lang === 'ar' ? 'تأكيد الحذف' : 'Confirm Delete',
-      message: t('confirmDeletePatient'),
-      action: async () => {
-        await apiFetch('/api/patients?id=' + id + '&userId=' + (user?.id || ''), { method: 'DELETE' });
-        loadPatients();
-        addToast(lang === 'ar' ? 'تم الحذف' : 'Patient deleted', 'success');
-      },
-    });
+  const handleDelete = async (id: string, patientName: string) => {
+    if (!confirm(lang === 'ar' ? `\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 \u0627\u0644\u0645\u0631\u064a\u0636 "${patientName}"\u061f` : `Delete patient "${patientName}"?`)) return;
+    await apiFetch(`/api/patients?id=${id}&userId=${user?.id}`, { method: 'DELETE' });
+    loadPatients();
+    addToast(lang === 'ar' ? '\u062a\u0645 \u0627\u0644\u062d\u0630\u0641' : 'Patient deleted', 'success');
   };
 
   const handleStartEdit = (patient: PatientWithSessions) => {
@@ -229,19 +214,7 @@ export function PatientListView() {
     addToast(lang === 'ar' ? '\u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a' : 'CSV exported', 'success');
   };
 
-    const handleExportExcel = () => {
-    const rows = sorted.map(p => {
-      const c = p.sessions.filter(s => s.result);
-      const l = c.length > 0 ? c[c.length - 1].result : null;
-      return { [lang==='ar'?'الاسم':'Name']: p.name, [lang==='ar'?'العمر':'Age']: p.age, [lang==='ar'?'الجنس':'Gender']: p.gender, [lang==='ar'?'الجلسات':'Sessions']: p.sessions.length, [lang==='ar'?'المكتملة':'Completed']: c.length, [lang==='ar'?'آخر مستوى خطورة':'Risk']: l?l.riskLevel:'', [lang==='ar'?'آخر درجة':'Score']: l?l.riskScore:'', [lang==='ar'?'الملاحظات':'Notes']: p.notes||'', [lang==='ar'?'تاريخ':'Created']: new Date(p.createdAt).toLocaleDateString(lang==='ar'?'ar-SA':'en-US') };
-    });
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, lang==='ar'?'المرضى':'Patients');
-    XLSX.writeFile(wb, 'patients_' + new Date().toISOString().split('T')[0] + '.xlsx');
-    addToast(lang==='ar'?'تم تصدير Excel':'Excel exported', 'success');
-  };
-const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error: 'bg-red-600', info: 'bg-blue-600' };
+  const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error: 'bg-red-600', info: 'bg-blue-600' };
 
   if (loading) {
     return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-4 border-gray-200 border-t-emerald-500 rounded-full animate-spin" /></div>;
@@ -273,15 +246,8 @@ const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error:
         </div>
         <div className="flex gap-2">
           {patients.length > 0 && (
-            <Button variant="outline" onClick={handleExportExcel} className="gap-2"><FileSpreadsheet className="w-4 h-4" /> Excel</Button>
-            </Button>
-          )}
-          {patients.length > 0 && (
-            </Button>
-          )}
-          {patients.length > 0 && (
             <Button variant="outline" onClick={handleExportCSV} className="gap-2">
-              <Download className="w-4 h-4" /> CSV
+              <Download className="w-4 h-4" /> {t('exportData')}
             </Button>
           )}
           <Button onClick={() => setShowNew(true)} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
@@ -303,20 +269,6 @@ const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error:
               <ArrowUpDown className={"w-3 h-3 inline-block " + (sortKey === key ? (sortAsc ? 'rotate-180' : '') : 'opacity-30')} />
             </button>
           ))}
-        </div>
-      </div>
-
-            {/* Date Filter */}
-      <div className="flex gap-3 flex-wrap items-center">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-          <Calendar className="w-3.5 h-3.5" />
-          <span>{lang === 'ar' ? 'من' : 'From'}</span>
-          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="h-8 px-2 rounded-md border border-gray-200 text-xs" />
-          <span>{lang === 'ar' ? 'إلى' : 'To'}</span>
-          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="h-8 px-2 rounded-md border border-gray-200 text-xs" />
-          {(dateFrom || dateTo) && (
-            <button onClick={() => { setDateFrom(''); setDateTo(''); }} className="text-xs text-red-500 hover:text-red-700">{lang === 'ar' ? 'مسح' : 'Clear'}</button>
-          )}
         </div>
       </div>
 
@@ -411,10 +363,6 @@ const TOAST_COLORS: Record<string, string> = { success: 'bg-emerald-600', error:
           })}
         </div>
       )}
-      <ConfirmDialog open={confirmState.open} title={confirmState.title} message={confirmState.message}
-        confirmText={lang === "ar" ? "حذف" : "Delete"} cancelText={t("cancel")} variant="danger"
-        onConfirm={() => { confirmState.action(); setConfirmState(s => ({...s, open: false})); }}
-        onCancel={() => setConfirmState(s => ({...s, open: false}))} />
     </div>
   );
 }
